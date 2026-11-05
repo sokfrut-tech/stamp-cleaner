@@ -62,3 +62,10 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 ## Small-screen layout refinement
 - Reserved a 58 dp top inset in the scrollable StampCleaner screen so the floating background picker/reset/motion controls no longer sit over the app title/header on narrow phones. The rest of the screen remains vertically scrollable; processing logic and image preview/export behavior are unchanged.
 - Commit: `eae8ab5dd7c2f999282ff5879bd91287c1d0d02b`. Build and visual device verification pending.
+
+
+## Web markup QA correction — 2026-11-05
+- Independent review found a literal escaped newline sequence between the background layer and the page header in `web/index.html`. This could render as stray text in the browser even though JavaScript syntax and Android compilation passed.
+- Replaced the literal sequence with a real HTML line break. Commit: `0a3452a0e431ee566f36b7ff0f9fcc9b98f0377d`.
+- A new CI run is required to re-check web JS syntax, processor tests, and Android APK build for the corrected branch head.
+- This is source-level markup verification only; browser rendering and mobile device behavior remain unverified.
