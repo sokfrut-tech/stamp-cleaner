@@ -43,7 +43,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  var tol by remember{mutableFloatStateOf(38f)};var ink by remember{mutableStateOf(inks[0])}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
-  if(uri!=null)scope.launch{busy=true;try{src=withContext(Dispatchers.IO){ctx.contentResolver.openInputStream(uri)?.use{BitmapFactory.decodeStream(it)}};dst=null;status="Фото загружено."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}
+  if(uri!=null)scope.launch{busy=true;try{src=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};dst=null;status="Фото загружено."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}
  }
  val savePng=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")){uri->
   val bitmap=dst
@@ -102,4 +102,14 @@ private fun clean(b:Bitmap,t:Int,color:Int?):Bitmap{
  for(i in p.indices){val x=p[i];val lum=(.299*C.red(x)+.587*C.green(x)+.114*C.blue(x)).toInt();val dark=255-lum;val a=(((dark-threshold).toFloat()*255)/(255-threshold)).toInt().coerceIn(0,255)*C.alpha(x)/255
  p[i]=if(a<5)C.TRANSPARENT else if(color==null)C.argb(a,C.red(x),C.green(x),C.blue(x))else C.argb(a,C.red(color),C.green(color),C.blue(color))}
  return Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(p,0,w,0,0,w,h)}
+}
+
+private fun decodeScaled(context:android.content.Context,uri:android.net.Uri):Bitmap?{
+ val bounds=BitmapFactory.Options().apply{inJustDecodeBounds=true}
+ context.contentResolver.openInputStream(uri)?.use{BitmapFactory.decodeStream(it,null,bounds)}
+ if(bounds.outWidth<=0||bounds.outHeight<=0)return null
+ var sample=1
+ while(maxOf(bounds.outWidth/sample,bounds.outHeight/sample)>2500)sample*=2
+ val options=BitmapFactory.Options().apply{inSampleSize=sample;inPreferredConfig=Bitmap.Config.ARGB_8888}
+ return context.contentResolver.openInputStream(uri)?.use{BitmapFactory.decodeStream(it,null,options)}
 }
