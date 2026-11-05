@@ -52,7 +52,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  val ctx=LocalContext.current;val scope=rememberCoroutineScope()
  var src by remember{mutableStateOf<Bitmap?>(null)};var dst by remember{mutableStateOf<Bitmap?>(null)}
  var widthMm by remember{mutableStateOf("40")};var heightMm by remember{mutableStateOf("40")};var dpi by remember{mutableIntStateOf(300)}
- var tol by remember{mutableFloatStateOf(38f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)}
+ var tol by remember{mutableFloatStateOf(12f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
   if(uri!=null){src=null;dst=null;scope.launch{busy=true;try{val decoded=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};src=decoded;status=if(decoded!=null)"Фото загружено." else "Не удалось прочитать изображение."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}}
@@ -146,7 +146,7 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
   val i=y*w+x;val c=pixels[i]
   val dr=sample(br,x,y)-C.red(c);val dg=sample(bg,x,y)-C.green(c);val db=sample(bb,x,y)-C.blue(c)
   val distance=kotlin.math.sqrt(dr*dr+dg*dg+db*db)
-  val alpha=(((distance-threshold)/(441.7f-threshold))*255f).toInt().coerceIn(0,255)*C.alpha(c)/255
+  val alpha=(((distance-threshold)/70f)*255f).toInt().coerceIn(0,255)*C.alpha(c)/255
   pixels[i]=if(alpha<4)C.TRANSPARENT else if(color==null)C.argb(alpha,C.red(c),C.green(c),C.blue(c))else C.argb(alpha,C.red(color),C.green(color),C.blue(color))
  }
  val output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
