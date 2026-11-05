@@ -166,7 +166,7 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
   val dr=p[0]-C.red(c);val dg=p[1]-C.green(c);val db=p[2]-C.blue(c)
   val raw=(dr*r+dg*g+db*bl)/norm
   val linearAlpha=((raw-cutoff)/denom).coerceIn(0f,1f)
-  val alpha=kotlin.math.pow(linearAlpha,1.12f)
+  val alpha=Math.pow(linearAlpha.toDouble(),1.12).toFloat()
   pixels[i]=if(alpha<.015f)C.TRANSPARENT else C.argb((alpha*255).toInt(),ink[0],ink[1],ink[2])
  }
  val output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
