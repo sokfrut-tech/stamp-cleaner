@@ -154,10 +154,24 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
   intArrayOf(channel(16),channel(8),channel(0))
  }
  val ink=color?.let{intArrayOf(C.red(it),C.green(it),C.blue(it))}?:detected
- val vr=(br[0].toFloat()-ink[0]);val vg=(bg[0].toFloat()-ink[1]);val vb=(bb[0].toFloat()-ink[2])
- // The local paper estimate supplies the per-pixel projection; use the median paper-to-ink distance for a stable threshold.
- val distances=FloatArray(gw*gh){i->kotlin.math.sqrt(((br[i]-ink[0]).toFloat().let{it*it})+((bg[i]-ink[1]).toFloat().let{it*it})+((bb[i]-ink[2]).toFloat().let{it*it}))}
- distances.sort();val inkDistance=distances[distances.size/2].coerceAtLeast(1f)
+ // Match the web processor's local projection distribution. The previous Android
+ // implementation used the median paper-to-ink distance across every tile; because
+ // most tiles contain only paper, that median could be close to zero and destroy
+ // faint strokes or leave a paper veil.
+ val projections=ArrayList<Float>()
+ for(y in 0 until h step 3)for(x in 0 until w step 3){
+  val i=y*w+x;val c=pixels[i];val p=paper(x,y)
+  if(C.alpha(c)<200)continue
+  val vr=p[0]-ink[0];val vg=p[1]-ink[1];val vb=p[2]-ink[2]
+  val norm=vr*vr+vg*vg+vb*vb
+  if(norm<400)continue
+  val dr=p[0]-C.red(c);val dg=p[1]-C.green(c);val db=p[2]-C.blue(c)
+  val projection=(dr*vr+dg*vg+db*vb)/kotlin.math.sqrt(norm.toFloat())
+  if(projection>threshold+12f)projections.add(projection)
+ }
+ projections.sort()
+ val inkDistance=if(projections.isNotEmpty())projections[(projections.size*.9f).toInt().coerceIn(0,projections.lastIndex)] else
+  kotlin.math.sqrt(((detected[0]-128f)*(detected[0]-128f)+(detected[1]-128f)*(detected[1]-128f)+(detected[2]-128f)*(detected[2]-128f))).coerceAtLeast(1f)
  val cutoff=(threshold/inkDistance).coerceIn(0f,.8f);val denom=(1f-cutoff).coerceAtLeast(.05f)
  for(y in 0 until h)for(x in 0 until w){
   val i=y*w+x;val c=pixels[i];val p=paper(x,y);val r=p[0]-ink[0];val g=p[1]-ink[1];val bl=p[2]-ink[2]
