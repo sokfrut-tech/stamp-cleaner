@@ -81,7 +81,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   }
   Panel("02  Настройте очистку",Icons.Default.Tune){
    Row(verticalAlignment=Alignment.CenterVertically){Text("Чувствительность",Modifier.weight(1f),color=Color(0xFFE8F0EA));Text(tol.toInt().toString(),color=Color(0xFFFFD18A),fontWeight=FontWeight.Bold)}
-   Slider(value=tol,onValueChange={tol=it},valueRange=10f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))
+   Slider(value=tol,onValueChange={tol=it},valueRange=5f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))
    Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFF79D6C2)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)}}
    Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Palette,null,tint=Color(0xFF8BDCC9));Spacer(Modifier.width(8.dp));Text("Цвет чернил",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold)}
    inks.chunked(3).forEach{line->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){line.forEach{choice->
@@ -204,7 +204,7 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
    val r=selection?:if(start!=null&&end!=null)Rect(minOf(start!!.x,end!!.x),minOf(start!!.y,end!!.y),maxOf(start!!.x,end!!.x),maxOf(start!!.y,end!!.y))else null
    r?.let{drawRect(Color(0xFFFFC66D),topLeft=Offset(it.left,it.top),size=androidx.compose.ui.geometry.Size(it.width,it.height),style=Stroke(3.dp.toPx()));drawCircle(Color(0xFFFFC66D),radius=7.dp.toPx(),center=Offset(it.right,it.bottom))}
   }
-  Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
    Button(enabled=selection!=null&&selection!!.width>8&&selection!!.height>8,onClick={val r=selection?:return@Button;val scale=minOf(canvasWidth/bitmap.width,canvasHeightPx);val viewW=bitmap.width*scale;val viewH=bitmap.height*scale;val ox=(canvasWidth-viewW)/2f;val oy=(canvasHeightPx-viewH)/2f;val l=((r.left-ox)/scale).toInt().coerceIn(0,bitmap.width-1);val t=((r.top-oy)/scale).toInt().coerceIn(0,bitmap.height-1);val rr=((r.right-ox)/scale).toInt().coerceIn(l+1,bitmap.width);val bb=((r.bottom-oy)/scale).toInt().coerceIn(t+1,bitmap.height);onCrop(Bitmap.createBitmap(bitmap,l,t,rr-l,bb-t))},modifier=Modifier.weight(1f).height(44.dp),contentPadding=PaddingValues(horizontal=6.dp,vertical=4.dp)){Text("Обрезать",maxLines=1,style=MaterialTheme.typography.labelLarge)}
    OutlinedButton(enabled=selection!=null,onClick={selection=null;start=null;end=null},modifier=Modifier.weight(1f).height(44.dp),contentPadding=PaddingValues(horizontal=6.dp,vertical=4.dp)){Text("Сбросить рамку",maxLines=1,style=MaterialTheme.typography.labelLarge)}
   }
