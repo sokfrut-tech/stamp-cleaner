@@ -154,3 +154,12 @@ The current main branch uses a simple global luminance threshold in Android and 
 - Output content is fitted proportionally inside the requested physical canvas; it is not stretched. Any unused area remains transparent.
 - Important caveat: some document editors or import paths may ignore PNG physical-resolution metadata. Users should verify the displayed size in Word after insertion.
 - CI for web commit `ea325ffd8ddf90c31e8786ddfb4ca253cb07b187` was queued/in progress at the time of this note; Android compile and artifact still require a completed green run. No release claim is made yet.
+
+
+## Manual crop implementation progress — 2026-11-05
+
+- Web preview now supports pointer/touch drag to draw a crop rectangle, apply it to the transparent result, and clear the pending selection. Cropping uses source bitmap coordinates and preserves alpha.
+- Android result preview now supports finger-drag rectangle selection and applying the crop; a pending selection can be cleared before applying.
+- The current manual crop interaction draws a new rectangle; drag-to-move and corner/edge resize handles are not implemented yet. This is a first usable crop pass, not the final editing experience.
+- Successful workflow run #81 (`42068729226`) completed all steps, including JavaScript syntax check, Android debug APK build, and artifact upload. That run predates the latest manual-crop commits; the new crop changes still require a fresh green build.
+- The crop mapping and touch behavior need device QA on narrow screens, portrait/landscape images, and very small selections. Do not merge PR #2 until the new workflow passes and the manual crop has been exercised.
