@@ -38,7 +38,9 @@
    if(norm<400){data[i+3]=0;continue;}
    const delta=[p[0]-data[i],p[1]-data[i+1],p[2]-data[i+2]];
    const raw=(delta[0]*v[0]+delta[1]*v[1]+delta[2]*v[2])/norm;
-   const alpha=Math.max(0,Math.min(1,(raw-cutoff)/denom));
+   const linearAlpha=Math.max(0,Math.min(1,(raw-cutoff)/denom));
+   // Slightly tighten antialiased edges without erasing faint ink.
+   const alpha=Math.pow(linearAlpha,1.12);
    data[i]=ink[0];data[i+1]=ink[1];data[i+2]=ink[2];data[i+3]=alpha<.015?0:Math.round(alpha*255*data[i+3]/255);
   }
   if(!trim)return{data,width:w,height:h};
