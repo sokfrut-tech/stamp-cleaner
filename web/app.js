@@ -52,9 +52,29 @@ go.addEventListener('click',()=>{
 
 const cropOverlay=$('#crop-overlay'),cropSelection=$('#crop-selection'),applyCrop=$('#apply-crop'),resetCrop=$('#reset-crop');
 function drawCropSelection(){if(!cropRect){cropSelection.style.display='none';return;}cropSelection.style.display='block';cropSelection.style.left=(cropRect.x/result.width*100)+'%';cropSelection.style.top=(cropRect.y/result.height*100)+'%';cropSelection.style.width=(cropRect.w/result.width*100)+'%';cropSelection.style.height=(cropRect.h/result.height*100)+'%';}
-cropOverlay.addEventListener('pointerdown',e=>{if(!result.width||!result.height)return;const r=result.getBoundingClientRect();cropStart={x:Math.max(0,Math.min(result.width,(e.clientX-r.left)*result.width/r.width)),y:Math.max(0,Math.min(result.height,(e.clientY-r.top)*result.height/r.height))};cropRect={x:cropStart.x,y:cropStart.y,w:0,h:0};cropOverlay.setPointerCapture(e.pointerId);drawCropSelection();});
-cropOverlay.addEventListener('pointermove',e=>{if(!cropStart)return;const r=result.getBoundingClientRect(),x=Math.max(0,Math.min(result.width,(e.clientX-r.left)*result.width/r.width)),y=Math.max(0,Math.min(result.height,(e.clientY-r.top)*result.height/r.height));cropRect={x:Math.min(x,cropStart.x),y:Math.min(y,cropStart.y),w:Math.abs(x-cropStart.x),h:Math.abs(y-cropStart.y)};drawCropSelection();});
-function finishCrop(){if(!cropStart)return;cropStart=null;const valid=cropRect&&cropRect.w>=4&&cropRect.h>=4;applyCrop.disabled=!valid;resetCrop.disabled=!cropRect; if(!valid){cropRect=null;drawCropSelection();}}
+
+let cropGesture=null;
+function pointerPoint(e){const r=result.getBoundingClientRect();return{x:Math.max(0,Math.min(result.width,(e.clientX-r.left)*result.width/r.width)),y:Math.max(0,Math.min(result.height,(e.clientY-r.top)*result.height/r.height))};}
+cropOverlay.addEventListener('pointerdown',e=>{
+ if(!result.width||!result.height)return;
+ const p=pointerPoint(e);let mode='draw',anchor=null;
+ if(cropRect){const pad=Math.max(12,result.width*0.025),corners=[['nw',cropRect.x,cropRect.y],['ne',cropRect.x+cropRect.w,cropRect.y],['sw',cropRect.x,cropRect.y+cropRect.h],['se',cropRect.x+cropRect.w,cropRect.y+cropRect.h]];
+  const hit=corners.find(([,x,y])=>Math.hypot(p.x-x,p.y-y)<=pad);
+  if(hit){mode='resize';anchor=hit[0];}
+  else if(p.x>=cropRect.x&&p.x<=cropRect.x+cropRect.w&&p.y>=cropRect.y&&p.y<=cropRect.y+cropRect.h){mode='move';}
+ }
+ cropGesture={mode,start:p,initial:cropRect?{...cropRect}:null,anchor};
+ if(mode==='draw')cropRect={x:p.x,y:p.y,w:0,h:0};
+ cropOverlay.setPointerCapture(e.pointerId);drawCropSelection();
+});
+cropOverlay.addEventListener('pointermove',e=>{
+ if(!cropGesture)return;const p=pointerPoint(e),g=cropGesture;
+ if(g.mode==='draw'){cropRect={x:Math.min(p.x,g.start.x),y:Math.min(p.y,g.start.y),w:Math.abs(p.x-g.start.x),h:Math.abs(p.y-g.start.y)};}
+ else if(g.mode==='move'){const dx=p.x-g.start.x,dy=p.y-g.start.y,old=g.initial;cropRect={x:Math.max(0,Math.min(result.width-old.w,old.x+dx)),y:Math.max(0,Math.min(result.height-old.h,old.y+dy)),w:old.w,h:old.h};}
+ else{const old=g.initial,ax=g.anchor.includes('w')?old.x+old.w:old.x,ay=g.anchor.includes('n')?old.y+old.h:old.y;const left=Math.min(ax,p.x),top=Math.min(ay,p.y),right=Math.max(ax,p.x),bottom=Math.max(ay,p.y);cropRect={x:left,y:top,w:right-left,h:bottom-top};}
+ drawCropSelection();
+});
+function finishCrop(){if(!cropGesture)return;cropGesture=null;const valid=cropRect&&cropRect.w>=4&&cropRect.h>=4;applyCrop.disabled=!valid;resetCrop.disabled=!cropRect;if(!valid){cropRect=null;drawCropSelection();}}
 cropOverlay.addEventListener('pointerup',finishCrop);cropOverlay.addEventListener('pointercancel',finishCrop);
 applyCrop.addEventListener('click',()=>{if(!cropRect||cropRect.w<4||cropRect.h<4)return;const x=Math.round(cropRect.x),y=Math.round(cropRect.y),w=Math.max(1,Math.round(cropRect.w)),h=Math.max(1,Math.round(cropRect.h)),pixels=ctx.getImageData(x,y,w,h);result.width=w;result.height=h;ctx.putImageData(pixels,0,0);cropRect=null;drawCropSelection();applyCrop.disabled=true;resetCrop.disabled=true;status.textContent='Ручная обрезка применена. Прозрачность сохранена.';});
 resetCrop.addEventListener('click',()=>{cropRect=null;cropStart=null;drawCropSelection();applyCrop.disabled=true;resetCrop.disabled=true;});
