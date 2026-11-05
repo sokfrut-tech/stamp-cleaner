@@ -16,7 +16,7 @@
   const data=new Uint8ClampedArray(input),paper=estimatePaper(data,w,h);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
    const i=(y*w+x)*4,[pr,pg,pb]=paper(x,y),dr=pr-data[i],dg=pg-data[i+1],db=pb-data[i+2],distance=Math.sqrt(dr*dr+dg*dg+db*db);
-   const alpha=Math.max(0,Math.min(255,Math.round((distance-threshold)*255/(441.7-threshold))));data[i+3]=Math.round(alpha*data[i+3]/255);if(alpha<4)data[i+3]=0;
+   const alpha=Math.max(0,Math.min(255,Math.round((distance-threshold)*255/70)));data[i+3]=Math.round(alpha*data[i+3]/255);if(alpha<4)data[i+3]=0;
    if(inkRgb){data[i]=inkRgb[0];data[i+1]=inkRgb[1];data[i+2]=inkRgb[2];}
   }
   if(!trim)return{data,width:w,height:h};
