@@ -61,7 +61,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   val bitmap=dst
   if(uri!=null&&bitmap!=null)scope.launch{busy=true;try{val ok=withContext(Dispatchers.IO){ctx.contentResolver.openOutputStream(uri)?.use{out->out.write(exportPng(bitmap,widthMm.toFloat(),heightMm.toFloat(),dpi));true}?:false};Toast.makeText(ctx,if(ok)"PNG сохранён." else "Не удалось сохранить PNG.",Toast.LENGTH_LONG).show()}catch(e:Exception){Toast.makeText(ctx,"Ошибка сохранения PNG.",Toast.LENGTH_LONG).show()}finally{busy=false}}
  }
- Column(Modifier.fillMaxSize().background(Color.Transparent).verticalScroll(rememberScrollState()).padding(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)){
+ Column(Modifier.fillMaxSize().padding(top = 58.dp).background(Color.Transparent).verticalScroll(rememberScrollState()).padding(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)){
   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
    Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFF52235D)),contentAlignment=Alignment.Center){Text("✦",style=MaterialTheme.typography.headlineMedium)}
    Column(Modifier.weight(1f)){Text("StampCleaner",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.ExtraBold,color=Color(0xFFFFB5E8));Text("NEON CLUB · STAMP STUDIO",color=Color(0xFFD2B6D4))}
