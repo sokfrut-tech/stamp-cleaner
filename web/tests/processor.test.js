@@ -66,3 +66,12 @@ test('paper gradient does not become a visible opaque background',()=>{
  assert.equal(out.data[((h-1)*w)*4+3],0,'bottom paper is transparent');
  assert.ok(out.data[(50*w+60)*4+3]>200,'blue ink core remains visible');
 });
+
+test('thin one-pixel ink strokes stay crisp and opaque at their center',()=>{
+ const w=96,h=96,d=new Uint8ClampedArray(w*h*4);
+ for(let i=0;i<d.length;i+=4){d[i]=248;d[i+1]=246;d[i+2]=240;d[i+3]=255;}
+ for(let x=20;x<76;x++){const i=(48*w+x)*4;d[i]=20;d[i+1]=45;d[i+2]=150;}
+ const out=processImageData(d,w,h,8,null,false);
+ for(let x=24;x<72;x++)assert.ok(out.data[(48*w+x)*4+3]>220,'one-pixel core must remain solid');
+ assert.equal(out.data[(47*w+48)*4+3],0,'adjacent paper must stay transparent');
+});
