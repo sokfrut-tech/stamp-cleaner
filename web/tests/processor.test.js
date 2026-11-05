@@ -41,3 +41,28 @@ test('very pale blue ink retains visible alpha at low sensitivity',()=>{
  assert.ok(alpha>=20, 'pale blue ink should remain visible');
  assert.equal(out.data[3],0,'paper background should be transparent');
 });
+
+test('antialiased blue ink edges are decontaminated instead of retaining paper-colored halos',()=>{
+ const w=96,h=96,d=new Uint8ClampedArray(w*h*4),paper=[220,218,212],ink=[18,42,145];
+ for(let i=0;i<d.length;i+=4){d[i]=paper[0];d[i+1]=paper[1];d[i+2]=paper[2];d[i+3]=255;}
+ // A one-pixel core plus half-covered edge pixels, as produced by a camera or resampling.
+ for(let x=24;x<72;x++){
+  for(const [y,a] of [[47,.5],[48,1],[49,.5]]){
+   const i=(y*w+x)*4;for(let c=0;c<3;c++)d[i+c]=Math.round(paper[c]*(1-a)+ink[c]*a);
+  }
+ }
+ const out=processImageData(d,w,h,8,null,false);
+ const edge=(48*w+30)*4,edgeAlpha=out.data[edge+3];
+ assert.ok(edgeAlpha>80&&edgeAlpha<255,'antialiased edge should remain partially transparent');
+ assert.ok(Math.abs(out.data[edge]-ink[0])<25&&Math.abs(out.data[edge+1]-ink[1])<25&&Math.abs(out.data[edge+2]-ink[2])<25,'edge RGB should be decontaminated toward ink, not paper');
+ assert.equal(out.data[3],0,'paper remains transparent');
+});
+test('paper gradient does not become a visible opaque background',()=>{
+ const w=120,h=100,d=new Uint8ClampedArray(w*h*4);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4,v=245-Math.round(y*.45);d[i]=v;d[i+1]=v-2;d[i+2]=v-5;d[i+3]=255;}
+ for(let x=35;x<85;x++){const i=(50*w+x)*4;d[i]=20;d[i+1]=45;d[i+2]=150;}
+ const out=processImageData(d,w,h,12,null,false);
+ assert.equal(out.data[3],0,'top paper is transparent');
+ assert.equal(out.data[((h-1)*w)*4+3],0,'bottom paper is transparent');
+ assert.ok(out.data[(50*w+60)*4+3]>200,'blue ink core remains visible');
+});
