@@ -35,13 +35,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private data class Ink(val name:String,val color:Int?)
+private enum class ContentMode(val title:String,val hint:String){SIGNATURE("Подпись","Сохраняем тонкие рукописные линии"),STAMP("Печать","Сохраняем контур и детали оттиска"),TEXT("Текстовый штамп","Сохраняем мелкие буквы и цифры")}\nprivate data class Ink(val name:String,val color:Int?)
 private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),Ink("Чёрный",C.BLACK),Ink("Фиолетовый",0xFF7023A0.toInt()),Ink("Красный",C.RED),Ink("Зелёный",0xFF147841.toInt()))
 
 @Composable fun StampCleanerScreen(){
  val ctx=LocalContext.current;val scope=rememberCoroutineScope()
  var src by remember{mutableStateOf<Bitmap?>(null)};var dst by remember{mutableStateOf<Bitmap?>(null)}
- var tol by remember{mutableFloatStateOf(38f)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)}
+ var tol by remember{mutableFloatStateOf(38f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
   if(uri!=null){src=null;dst=null;scope.launch{busy=true;try{val decoded=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};src=decoded;status=if(decoded!=null)"Фото загружено." else "Не удалось прочитать изображение."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}}
@@ -82,7 +82,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
     Icon(Icons.Default.AutoFixHigh,null);Spacer(Modifier.width(8.dp));Text(if(busy)"Обрабатываем…" else "Удалить фон",fontWeight=FontWeight.Bold)
    }
   }
-  Panel("03  Прозрачный результат",Icons.Default.SaveAlt){
+  Panel("04  Прозрачный результат",Icons.Default.SaveAlt){
    if(dst==null)Text("Здесь появится ваша печать или подпись.",color=Color(0xFFB6CBBF)) else{
     Preview(dst!!,"PNG без фона")
     Button(enabled=!busy,onClick={savePng.launch("stamp-cleaner-${System.currentTimeMillis()}.png")},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
