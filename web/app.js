@@ -2,8 +2,9 @@ const $=s=>document.querySelector(s);
 const file=$('#file'),tol=$('#tol'),value=$('#v'),inkButtons=[...document.querySelectorAll('.swatch')];
 const go=$('#go'),save=$('#save'),original=$('#original'),result=$('#canvas');
 const octx=original.getContext('2d'),ctx=result.getContext('2d',{willReadFrequently:true});
-const status=$('#status');let image=null,objectUrl=null,selected='original';
+const trim=$('#trim');const mode=$('#mode');const status=$('#status');let image=null,objectUrl=null,selected='original',cropRect=null,cropStart=null;
 tol.addEventListener('input',()=>value.textContent=tol.value);
+mode.addEventListener('change',()=>{tol.value=mode.value==='signature'?8:mode.value==='text'?18:12;value.textContent=tol.value;});
 inkButtons.forEach(btn=>btn.addEventListener('click',()=>{inkButtons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');selected=btn.dataset.color;}));
 file.addEventListener('change',()=>{
  const f=file.files&&file.files[0];if(!f)return;
@@ -15,44 +16,56 @@ file.addEventListener('change',()=>{
  image.onload=()=>{
   const maxPixels=6250000,scale=Math.min(1,Math.sqrt(maxPixels/(image.naturalWidth*image.naturalHeight)));
   const w=Math.max(1,Math.round(image.naturalWidth*scale)),h=Math.max(1,Math.round(image.naturalHeight*scale));
-  original.width=result.width=w;original.height=result.height=h;
-  octx.clearRect(0,0,w,h);octx.drawImage(image,0,0,w,h);ctx.clearRect(0,0,w,h);
-  original.style.display='block';result.style.display='none';
-  $('#empty-source').style.display='none';$('#empty-result').style.display='block';
+  original.width=result.width=w;original.height=result.height=h;octx.clearRect(0,0,w,h);octx.drawImage(image,0,0,w,h);ctx.clearRect(0,0,w,h);
+  original.style.display='block';result.style.display='none';$('#empty-source').style.display='none';$('#empty-result').style.display='block';
   $('#source-info').textContent=f.name+' · '+w+' × '+h+(scale<1?' · уменьшено для обработки на телефоне':'');
-  go.disabled=false;save.disabled=true;status.textContent='Изображение загружено. Настройте чувствительность и цвет.';
-  URL.revokeObjectURL(objectUrl);objectUrl=null;
+  go.disabled=false;save.disabled=true;status.textContent='Изображение загружено. Настройте чувствительность и цвет.';URL.revokeObjectURL(objectUrl);objectUrl=null;
  };
- image.onerror=()=>{status.textContent='Не удалось прочитать это изображение.';go.disabled=true;};
- image.src=objectUrl;
+ image.onerror=()=>{status.textContent='Не удалось прочитать это изображение.';go.disabled=true;};image.src=objectUrl;
 });
 go.addEventListener('click',()=>{
- if(!image||!original.width)return;
- go.disabled=true;go.textContent='Обрабатываем…';status.textContent='Удаляем светлый фон…';
+ if(!image||!original.width)return;go.disabled=true;go.textContent='Обрабатываем…';status.textContent='Оцениваем цвет бумаги и удаляем фон…';
  try{
-  const w=original.width,h=original.height;
-  const pixels=octx.getImageData(0,0,w,h),data=pixels.data,t=Number(tol.value);
-  let rgb=null;
-  if(selected!=='original'){const n=parseInt(selected.slice(1),16);rgb=[n>>16&255,n>>8&255,n&255];}
-  for(let i=0;i<data.length;i+=4){
-   const luminance=.299*data[i]+.587*data[i+1]+.114*data[i+2];
-   const darkness=255-luminance;
-   const alpha=Math.max(0,Math.min(255,Math.round((darkness-t)*255/(255-t))));
-   if(alpha<5)data[i+3]=0;
-   else{if(rgb){data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];}data[i+3]=Math.round(alpha*data[i+3]/255);}
-  }
-  ctx.putImageData(pixels,0,0);result.style.display='block';$('#empty-result').style.display='none';
-  save.disabled=false;status.textContent='Готово! Проверьте тонкие линии и скачайте PNG.';
+  const w=original.width,h=original.height,pixels=octx.getImageData(0,0,w,h),t=Number(tol.value);
+  let rgb=null;if(selected!=='original'){const n=parseInt(selected.slice(1),16);rgb=[n>>16&255,n>>8&255,n&255];}
+  const processed=StampProcessor.processImageData(pixels.data,w,h,t,rgb,trim.checked);
+  const out=new ImageData(processed.data,processed.width,processed.height);result.width=processed.width;result.height=processed.height;ctx.putImageData(out,0,0);
+  cropRect=null;applyCrop.disabled=true;resetCrop.disabled=true;cropSelection.style.display='none';
+  result.style.display='block';$('#empty-result').style.display='none';save.disabled=false;status.textContent='Готово! Проверьте тонкие линии и скачайте PNG.';
  }catch(err){status.textContent='Не удалось обработать изображение. Попробуйте фото меньшего размера.';}
  finally{go.disabled=false;go.innerHTML='<span>✦</span> Удалить фон';}
 });
-save.addEventListener('click',()=>{
- if(!result.width)return;
- result.toBlob(blob=>{
-  if(!blob){status.textContent='Не удалось создать PNG.';return;}
-  const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='stamp-cleaner.png';document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
- },'image/png');
+
+const cropOverlay=$('#crop-overlay'),cropSelection=$('#crop-selection'),applyCrop=$('#apply-crop'),resetCrop=$('#reset-crop');
+function drawCropSelection(){if(!cropRect){cropSelection.style.display='none';return;}cropSelection.style.display='block';cropSelection.style.left=(cropRect.x/result.width*100)+'%';cropSelection.style.top=(cropRect.y/result.height*100)+'%';cropSelection.style.width=(cropRect.w/result.width*100)+'%';cropSelection.style.height=(cropRect.h/result.height*100)+'%';}
+
+let cropGesture=null;
+function pointerPoint(e){const r=result.getBoundingClientRect();return{x:Math.max(0,Math.min(result.width,(e.clientX-r.left)*result.width/r.width)),y:Math.max(0,Math.min(result.height,(e.clientY-r.top)*result.height/r.height))};}
+cropOverlay.addEventListener('pointerdown',e=>{
+ if(!result.width||!result.height)return;
+ const p=pointerPoint(e);let mode='draw',anchor=null;
+ if(cropRect){const pad=Math.max(12,result.width*0.025),corners=[['nw',cropRect.x,cropRect.y],['ne',cropRect.x+cropRect.w,cropRect.y],['sw',cropRect.x,cropRect.y+cropRect.h],['se',cropRect.x+cropRect.w,cropRect.y+cropRect.h]];
+  const hit=corners.find(([,x,y])=>Math.hypot(p.x-x,p.y-y)<=pad);
+  if(hit){mode='resize';anchor=hit[0];}
+  else if(p.x>=cropRect.x&&p.x<=cropRect.x+cropRect.w&&p.y>=cropRect.y&&p.y<=cropRect.y+cropRect.h){mode='move';}
+ }
+ cropGesture={mode,start:p,initial:cropRect?{...cropRect}:null,anchor};
+ if(mode==='draw')cropRect={x:p.x,y:p.y,w:0,h:0};
+ cropOverlay.setPointerCapture(e.pointerId);drawCropSelection();
 });
+cropOverlay.addEventListener('pointermove',e=>{
+ if(!cropGesture)return;const p=pointerPoint(e),g=cropGesture;
+ if(g.mode==='draw'){cropRect={x:Math.min(p.x,g.start.x),y:Math.min(p.y,g.start.y),w:Math.abs(p.x-g.start.x),h:Math.abs(p.y-g.start.y)};}
+ else if(g.mode==='move'){const dx=p.x-g.start.x,dy=p.y-g.start.y,old=g.initial;cropRect={x:Math.max(0,Math.min(result.width-old.w,old.x+dx)),y:Math.max(0,Math.min(result.height-old.h,old.y+dy)),w:old.w,h:old.h};}
+ else{const old=g.initial,ax=g.anchor.includes('w')?old.x+old.w:old.x,ay=g.anchor.includes('n')?old.y+old.h:old.y;const left=Math.min(ax,p.x),top=Math.min(ay,p.y),right=Math.max(ax,p.x),bottom=Math.max(ay,p.y);cropRect={x:left,y:top,w:right-left,h:bottom-top};}
+ drawCropSelection();
+});
+function finishCrop(){if(!cropGesture)return;cropGesture=null;const valid=cropRect&&cropRect.w>=4&&cropRect.h>=4;applyCrop.disabled=!valid;resetCrop.disabled=!cropRect;if(!valid){cropRect=null;drawCropSelection();}}
+cropOverlay.addEventListener('pointerup',finishCrop);cropOverlay.addEventListener('pointercancel',finishCrop);
+applyCrop.addEventListener('click',()=>{if(!cropRect||cropRect.w<4||cropRect.h<4)return;const x=Math.round(cropRect.x),y=Math.round(cropRect.y),w=Math.max(1,Math.round(cropRect.w)),h=Math.max(1,Math.round(cropRect.h)),pixels=ctx.getImageData(x,y,w,h);result.width=w;result.height=h;ctx.putImageData(pixels,0,0);cropRect=null;drawCropSelection();applyCrop.disabled=true;resetCrop.disabled=true;status.textContent='Ручная обрезка применена. Прозрачность сохранена.';});
+resetCrop.addEventListener('click',()=>{cropRect=null;cropStart=null;drawCropSelection();applyCrop.disabled=true;resetCrop.disabled=true;});
+
+function crc32(bytes){let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(let k=0;k<8;k++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}
+function addPhysChunk(pngBytes,dpi){const ppm=Math.round(dpi/0.0254),type=new TextEncoder().encode('pHYs'),data=new Uint8Array(9),view=new DataView(data.buffer);view.setUint32(0,ppm);view.setUint32(4,ppm);data[8]=1;const crcInput=new Uint8Array(13);crcInput.set(type);crcInput.set(data,4);const chunk=new Uint8Array(21),cv=new DataView(chunk.buffer);cv.setUint32(0,9);chunk.set(type,4);chunk.set(data,8);cv.setUint32(17,crc32(crcInput));const out=new Uint8Array(pngBytes.length+chunk.length);out.set(pngBytes.subarray(0,33),0);out.set(chunk,33);out.set(pngBytes.subarray(33),54);return out;}
+save.addEventListener('click',async()=>{if(!result.width||!result.height)return;const widthMm=Number($('#width-mm').value),heightMm=Number($('#height-mm').value),dpi=Number($('#dpi').value);if(!(widthMm>=5&&widthMm<=300&&heightMm>=5&&heightMm<=300)){status.textContent='Укажите ширину и высоту от 5 до 300 мм.';return;}const targetW=Math.max(1,Math.round(widthMm*dpi/25.4)),targetH=Math.max(1,Math.round(heightMm*dpi/25.4));if(targetW*targetH>40000000){status.textContent='Слишком большой размер экспорта. Уменьшите миллиметры или DPI.';return;}save.disabled=true;status.textContent='Подготавливаем PNG с заданным физическим размером…';try{const scaled=document.createElement('canvas');scaled.width=targetW;scaled.height=targetH;const sctx=scaled.getContext('2d'),factor=Math.min(1,targetW/result.width,targetH/result.height),drawW=result.width*factor,drawH=result.height*factor;sctx.drawImage(result,(targetW-drawW)/2,(targetH-drawH)/2,drawW,drawH);const blob=await new Promise(resolve=>scaled.toBlob(resolve,'image/png'));if(!blob)throw new Error('PNG encode failed');const bytes=new Uint8Array(await blob.arrayBuffer()),tagged=addPhysChunk(bytes,dpi),outBlob=new Blob([tagged],{type:'image/png'}),url=URL.createObjectURL(outBlob),a=document.createElement('a');a.href=url;a.download='stamp-cleaner.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);status.textContent='PNG сохранён: '+targetW+' × '+targetH+' px, '+widthMm+' × '+heightMm+' мм при '+dpi+' DPI.';}catch(err){status.textContent='Не удалось создать PNG с заданным размером.';}finally{save.disabled=false;} });
 window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl);});
