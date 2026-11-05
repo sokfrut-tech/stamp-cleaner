@@ -35,7 +35,7 @@ A separate source review found a conflicting Compose import name (`androidx.comp
 8. Request HIVE review focused on correctness, image-processing edge cases, memory use for large images, Android save permissions on API 26–28, accessibility, and security. Record substantive findings and dispositions here.
 
 ## Known product risks to test
-- Large images may cause memory pressure because processing currently allocates a full-size pixel array and output bitmap.
+- Source images are now decoded with a 2500 px maximum dimension to reduce memory pressure; verify output quality and peak memory on low-RAM devices.
 - PNG export now uses Android's Storage Access Framework document picker, avoiding broad storage permissions across Android versions. Verify the picker and file write on API 26, 28, 29, and 34.
 - The simple luminance threshold may remove pale ink or retain shadows; test with real stamps/signatures under uneven lighting.
 - The result should be visually inspected before export; avoid promising perfect separation for every scan.
