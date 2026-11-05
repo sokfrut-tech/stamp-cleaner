@@ -127,32 +127,51 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
  val w=b.width;val h=b.height;val pixels=IntArray(w*h);b.getPixels(pixels,0,w,0,0,w,h)
  val tile=24;val gw=(w+tile-1)/tile;val gh=(h+tile-1)/tile
  val br=IntArray(gw*gh);val bg=IntArray(gw*gh);val bb=IntArray(gw*gh)
- fun med(v:MutableList<Int>):Int{v.sort();return v[v.size/2]}
+ fun median(v:MutableList<Int>):Int{v.sort();return v[v.size/2]}
  for(gy in 0 until gh)for(gx in 0 until gw){
   val rs=ArrayList<Int>();val gs=ArrayList<Int>();val bs=ArrayList<Int>();val step=maxOf(1,tile/8)
   for(y in gy*tile until minOf(h,(gy+1)*tile) step step)for(x in gx*tile until minOf(w,(gx+1)*tile) step step){
    val c=pixels[y*w+x];rs.add(C.red(c));gs.add(C.green(c));bs.add(C.blue(c))
   }
-  val k=gy*gw+gx;br[k]=med(rs);bg[k]=med(gs);bb[k]=med(bs)
+  val k=gy*gw+gx;br[k]=median(rs);bg[k]=median(gs);bb[k]=median(bs)
  }
- fun sample(g:IntArray,x:Int,y:Int):Float{
+ fun paper(x:Int,y:Int):IntArray{
   val fx=(x.toFloat()/tile-.5f).coerceIn(0f,(gw-1).toFloat());val fy=(y.toFloat()/tile-.5f).coerceIn(0f,(gh-1).toFloat())
   val x0=fx.toInt();val y0=fy.toInt();val x1=minOf(gw-1,x0+1);val y1=minOf(gh-1,y0+1);val dx=fx-x0;val dy=fy-y0
-  val top=g[y0*gw+x0]*(1-dx)+g[y0*gw+x1]*dx;val bottom=g[y1*gw+x0]*(1-dx)+g[y1*gw+x1]*dx
-  return top*(1-dy)+bottom*dy
+  fun sample(g:IntArray):Int{val top=g[y0*gw+x0]*(1-dx)+g[y0*gw+x1]*dx;val bottom=g[y1*gw+x0]*(1-dx)+g[y1*gw+x1]*dx;return (top*(1-dy)+bottom*dy).toInt()}
+  return intArrayOf(sample(br),sample(bg),sample(bb))
  }
  val threshold=t.coerceIn(5,110).toFloat()
+ val capacity=((w+3)/4)*((h+3)/4);val candidates=LongArray(capacity);var count=0
+ for(y in 0 until h step 4)for(x in 0 until w step 4){
+  val c=pixels[y*w+x];val p=paper(x,y);val dr=p[0]-C.red(c);val dg=p[1]-C.green(c);val db=p[2]-C.blue(c)
+  val distance=kotlin.math.sqrt((dr*dr+dg*dg+db*db).toFloat())
+  if(distance>threshold+24){val score=(distance*1000).toLong().coerceAtMost(0x7fffffff);val rgb=(C.red(c) shl 16) or (C.green(c) shl 8) or C.blue(c);candidates[count++]=(score shl 24) or rgb.toLong()}
+ }
+ val detected=if(count==0)intArrayOf(20,45,130) else{
+  java.util.Arrays.sort(candidates,0,count);val take=minOf(count,maxOf(12,(count*.015f).toInt()+1));val from=count-take
+  fun channel(shift:Int):Int{val values=IntArray(take){((candidates[from+it] and 0xFFFFFFL).toInt() shr shift) and 255};values.sort();return values[take/2]}
+  intArrayOf(channel(16),channel(8),channel(0))
+ }
+ val ink=color?.let{intArrayOf(C.red(it),C.green(it),C.blue(it))}?:detected
+ val vr=(br[0].toFloat()-ink[0]);val vg=(bg[0].toFloat()-ink[1]);val vb=(bb[0].toFloat()-ink[2])
+ // The local paper estimate supplies the per-pixel projection; use the median paper-to-ink distance for a stable threshold.
+ val distances=FloatArray(gw*gh){i->kotlin.math.sqrt(((br[i]-ink[0]).toFloat().let{it*it})+((bg[i]-ink[1]).toFloat().let{it*it})+((bb[i]-ink[2]).toFloat().let{it*it}))}
+ distances.sort();val inkDistance=distances[distances.size/2].coerceAtLeast(1f)
+ val cutoff=(threshold/inkDistance).coerceIn(0f,.8f);val denom=(1f-cutoff).coerceAtLeast(.05f)
  for(y in 0 until h)for(x in 0 until w){
-  val i=y*w+x;val c=pixels[i]
-  val dr=sample(br,x,y)-C.red(c);val dg=sample(bg,x,y)-C.green(c);val db=sample(bb,x,y)-C.blue(c)
-  val distance=kotlin.math.sqrt(dr*dr+dg*dg+db*db)
-  val alpha=(((distance-threshold)/70f)*255f).toInt().coerceIn(0,255)*C.alpha(c)/255
-  pixels[i]=if(alpha<4)C.TRANSPARENT else if(color==null)C.argb(alpha,C.red(c),C.green(c),C.blue(c))else C.argb(alpha,C.red(color),C.green(color),C.blue(color))
+  val i=y*w+x;val c=pixels[i];val p=paper(x,y);val r=p[0]-ink[0];val g=p[1]-ink[1];val bl=p[2]-ink[2]
+  val norm=(r*r+g*g+bl*bl).toFloat()
+  if(norm<400f){pixels[i]=C.TRANSPARENT;continue}
+  val dr=p[0]-C.red(c);val dg=p[1]-C.green(c);val db=p[2]-C.blue(c)
+  val raw=(dr*r+dg*g+db*bl)/norm
+  val alpha=((raw-cutoff)/denom).coerceIn(0f,1f)
+  pixels[i]=if(alpha<.015f)C.TRANSPARENT else C.argb((alpha*255).toInt(),ink[0],ink[1],ink[2])
  }
  val output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
  if(!trim)return output
  var left=w;var top=h;var right=-1;var bottom=-1
- for(y in 0 until h)for(x in 0 until w)if(C.alpha(pixels[y*w+x])>8){if(x<left)left=x;if(x>right)right=x;if(y<top)top=y;if(y>bottom)bottom=y}
+ for(y in 0 until h)for(x in 0 until w)if(C.alpha(pixels[y*w+x])>18){if(x<left)left=x;if(x>right)right=x;if(y<top)top=y;if(y>bottom)bottom=y}
  if(right<left||bottom<top)return output
  val pad=maxOf(3,minOf(w,h)/100);left=(left-pad).coerceAtLeast(0);top=(top-pad).coerceAtLeast(0);right=(right+pad).coerceAtMost(w-1);bottom=(bottom+pad).coerceAtMost(h-1)
  val cropped=Bitmap.createBitmap(output,left,top,right-left+1,bottom-top+1);if(cropped!==output)output.recycle();return cropped
