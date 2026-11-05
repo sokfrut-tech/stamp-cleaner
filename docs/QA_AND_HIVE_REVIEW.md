@@ -70,3 +70,12 @@ These are sent requests only. No substantive Claude or Gemini review response ha
 
 ### Release gate
 The APK build is now verified and an installable debug APK artifact exists. Before calling the product fully released, install and test the APK on a real Android device, test a set of real stamps/signatures, and verify the saved PNG retains transparency. GitHub Pages deployment still requires merging the web workflow to `main` and confirming the deployment run.
+
+
+## Merge and handoff status
+- PR #1 was marked ready and squash-merged into `main` on 2026-11-05.
+- Merge commit: `4d99112d8df2663a067e9822201d445ecea837b3`.
+- The APK from successful CI run #31 was downloaded and checked as a valid Android APK archive; it is a **debug build**, not a Play Store/release-signed build.
+- The user instructed not to wait for Claude/Gemini responses. Their inbox requests remain informational only; this project proceeds under ChatGPT self-review.
+- GitHub Pages deployment is expected from the merge push, but the deployment result and public URL availability have not been confirmed through the available GitHub Actions lookup. Do not report the website as live until that check succeeds.
+- Physical Android-device testing remains outstanding.
