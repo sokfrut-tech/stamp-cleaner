@@ -188,3 +188,10 @@ The current main branch uses a simple global luminance threshold in Android and 
 - CI run #120 (`42070442608`) passed both JavaScript syntax checks, then failed 3 of 6 synthetic tests at the ink-retention assertion. Android build was correctly skipped by the fail-fast workflow.
 - Root cause was in the fixture assertion, not a demonstrated processor regression: the test drew a curved sinusoidal stroke but sampled a single fixed pixel that was not on the curve. Updated the assertion to scan the defined stroke region and require retained alpha there.
 - New test commit: `92f2530d40d6ae1350dc8af64199edef8b6221d0`. Await the next CI run; no passing claim until confirmed.
+
+
+### Android compile failure — fixed
+
+- CI run #123 (`42070755008`): JavaScript syntax checks passed and all 6 synthetic processor tests passed. Android Kotlin compilation then failed in the manual crop gesture because two `coerceIn` lower bounds used integer literals where Compose coordinates require `Float`.
+- Corrected `r.left + 8` and `r.top + 8` to `8f` in `StampCleanerScreen.kt`.
+- Fix commit: `e9861cb298e3fed33f0625bd20f432c732bb73eb`. Await a fresh CI result before claiming APK success.
