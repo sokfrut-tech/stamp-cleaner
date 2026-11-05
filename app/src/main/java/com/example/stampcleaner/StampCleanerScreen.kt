@@ -167,7 +167,14 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
   val raw=(dr*r+dg*g+db*bl)/norm
   val linearAlpha=((raw-cutoff)/denom).coerceIn(0f,1f)
   val alpha=Math.pow(linearAlpha.toDouble(),1.12).toFloat()
-  pixels[i]=if(alpha<.015f)C.TRANSPARENT else C.argb((alpha*255).toInt(),ink[0],ink[1],ink[2])
+  if(alpha<.015f)pixels[i]=C.TRANSPARENT else if(color!=null)pixels[i]=C.argb((alpha*255).toInt(),ink[0],ink[1],ink[2]) else {
+   // Original mode preserves the photographed ink hue and removes paper contamination at soft edges.
+   val a=alpha.coerceAtLeast(.08f)
+   val rr=(p[0]+(C.red(c)-p[0])/a).toInt().coerceIn(0,255)
+   val gg=(p[1]+(C.green(c)-p[1])/a).toInt().coerceIn(0,255)
+   val blc=(p[2]+(C.blue(c)-p[2])/a).toInt().coerceIn(0,255)
+   pixels[i]=C.argb((alpha*255).toInt(),rr,gg,blc)
+  }
  }
  val output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
  if(!trim)return output
