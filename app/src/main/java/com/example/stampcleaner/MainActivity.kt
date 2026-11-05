@@ -132,8 +132,14 @@ private fun ClubVideoBackground(uri: Uri) {
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = true
                         mediaPlayer.setVolume(0f, 0f)
-                        if (resumeAfterPause) seekTo(resumePosition)
-                        start()
+                        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            if (resumeAfterPause) seekTo(resumePosition)
+                            start()
+                            resumeAfterPause = false
+                        } else {
+                            resumePosition = 0
+                            resumeAfterPause = true
+                        }
                     }
                     player = this
                 }
