@@ -43,7 +43,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  var tol by remember{mutableFloatStateOf(38f)};var ink by remember{mutableStateOf(inks[0])}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
-  if(uri!=null)scope.launch{busy=true;try{src=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};dst=null;status="Фото загружено."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}
+  if(uri!=null){src=null;dst=null;scope.launch{busy=true;try{val decoded=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};src=decoded;status=if(decoded!=null)"Фото загружено." else "Не удалось прочитать изображение."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}}
  }
  val savePng=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")){uri->
   val bitmap=dst
@@ -77,7 +77,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
      choice.color?.let{Box(Modifier.size(9.dp).clip(CircleShape).background(Color(it)))};if(choice.color!=null)Spacer(Modifier.width(4.dp));Text(choice.name,style=MaterialTheme.typography.labelSmall)
     }
    };repeat(3-line.size){Spacer(Modifier.weight(1f))}}}
-   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,tol.toInt(),ink.color)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF79D6C2),contentColor=Color(0xFF142720))){
+   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF79D6C2),contentColor=Color(0xFF142720))){
     Icon(Icons.Default.AutoFixHigh,null);Spacer(Modifier.width(8.dp));Text(if(busy)"Обрабатываем…" else "Удалить фон",fontWeight=FontWeight.Bold)
    }
   }
