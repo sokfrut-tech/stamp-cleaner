@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
@@ -185,7 +186,7 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
 @Composable private fun CropPreview(bitmap:Bitmap,onCrop:(Bitmap)->Unit){
  var start by remember(bitmap){mutableStateOf<Offset?>(null)}
  var end by remember(bitmap){mutableStateOf<Offset?>(null)}
- var selection by remember(bitmap){mutableStateOf<Rect?>(null)}\n var canvasWidth by remember{mutableFloatStateOf(0f)}
+ var selection by remember(bitmap){mutableStateOf<Rect?>(null)}\n var canvasWidth by remember{mutableFloatStateOf(0f)}\n val canvasHeightPx=with(LocalDensity.current){230.dp.toPx()}
  Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
   Text("Ручная обрезка",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
   Text("Проведите пальцем по изображению, чтобы выделить нужную область.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
@@ -197,7 +198,7 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
    r?.let{drawRect(Color(0xFFFFC66D),topLeft=Offset(it.left,it.top),size=androidx.compose.ui.geometry.Size(it.width,it.height),style=Stroke(3.dp.toPx()))}
   }
   Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
-   Button(enabled=selection!=null&&selection!!.width>8&&selection!!.height>8,onClick={val r=selection?:return@Button;val scale=minOf(canvasWidth/bitmap.width,230.dp.toPxSafe());val viewW=bitmap.width*scale;val viewH=bitmap.height*scale;val ox=(canvasWidth-viewW)/2f;val oy=(230.dp.value*1f-viewH)/2f;val l=((r.left-ox)/scale).toInt().coerceIn(0,bitmap.width-1);val t=((r.top-oy)/scale).toInt().coerceIn(0,bitmap.height-1);val rr=((r.right-ox)/scale).toInt().coerceIn(l+1,bitmap.width);val bb=((r.bottom-oy)/scale).toInt().coerceIn(t+1,bitmap.height);onCrop(Bitmap.createBitmap(bitmap,l,t,rr-l,bb-t))}){Text("Обрезать по рамке")}
+   Button(enabled=selection!=null&&selection!!.width>8&&selection!!.height>8,onClick={val r=selection?:return@Button;val scale=minOf(canvasWidth/bitmap.width,canvasHeightPx);val viewW=bitmap.width*scale;val viewH=bitmap.height*scale;val ox=(canvasWidth-viewW)/2f;val oy=(canvasHeightPx-viewH)/2f;val l=((r.left-ox)/scale).toInt().coerceIn(0,bitmap.width-1);val t=((r.top-oy)/scale).toInt().coerceIn(0,bitmap.height-1);val rr=((r.right-ox)/scale).toInt().coerceIn(l+1,bitmap.width);val bb=((r.bottom-oy)/scale).toInt().coerceIn(t+1,bitmap.height);onCrop(Bitmap.createBitmap(bitmap,l,t,rr-l,bb-t))}){Text("Обрезать по рамке")}
    OutlinedButton(enabled=selection!=null,onClick={selection=null;start=null;end=null}){Text("Сбросить рамку")}
   }
  }
