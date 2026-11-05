@@ -97,11 +97,33 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
 @Composable private fun Preview(bitmap:Bitmap,label:String){
  Box(Modifier.fillMaxWidth().heightIn(max=260.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFE6E9E4)),contentAlignment=Alignment.Center){Image(bitmap.asImageBitmap(),label,Modifier.fillMaxWidth().heightIn(max=260.dp),contentScale=ContentScale.Fit)}
 }
-private fun clean(b:Bitmap,t:Int,color:Int?):Bitmap{
- val w=b.width;val h=b.height;val p=IntArray(w*h);b.getPixels(p,0,w,0,0,w,h);val threshold=t.coerceIn(1,254)
- for(i in p.indices){val x=p[i];val lum=(.299*C.red(x)+.587*C.green(x)+.114*C.blue(x)).toInt();val dark=255-lum;val a=(((dark-threshold).toFloat()*255)/(255-threshold)).toInt().coerceIn(0,255)*C.alpha(x)/255
- p[i]=if(a<5)C.TRANSPARENT else if(color==null)C.argb(a,C.red(x),C.green(x),C.blue(x))else C.argb(a,C.red(color),C.green(color),C.blue(color))}
- return Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(p,0,w,0,0,w,h)}
+private fun clean(b:Bitmap,t:Int,color:Int?):Bitmap {
+ val w=b.width;val h=b.height;val pixels=IntArray(w*h);b.getPixels(pixels,0,w,0,0,w,h)
+ val tile=24;val gw=(w+tile-1)/tile;val gh=(h+tile-1)/tile
+ val br=IntArray(gw*gh);val bg=IntArray(gw*gh);val bb=IntArray(gw*gh)
+ fun med(v:MutableList<Int>):Int{v.sort();return v[v.size/2]}
+ for(gy in 0 until gh)for(gx in 0 until gw){
+  val rs=ArrayList<Int>();val gs=ArrayList<Int>();val bs=ArrayList<Int>();val step=maxOf(1,tile/8)
+  for(y in gy*tile until minOf(h,(gy+1)*tile) step step)for(x in gx*tile until minOf(w,(gx+1)*tile) step step){
+   val c=pixels[y*w+x];rs.add(C.red(c));gs.add(C.green(c));bs.add(C.blue(c))
+  }
+  val k=gy*gw+gx;br[k]=med(rs);bg[k]=med(gs);bb[k]=med(bs)
+ }
+ fun sample(g:IntArray,x:Int,y:Int):Float{
+  val fx=(x.toFloat()/tile-.5f).coerceIn(0f,(gw-1).toFloat());val fy=(y.toFloat()/tile-.5f).coerceIn(0f,(gh-1).toFloat())
+  val x0=fx.toInt();val y0=fy.toInt();val x1=minOf(gw-1,x0+1);val y1=minOf(gh-1,y0+1);val dx=fx-x0;val dy=fy-y0
+  val top=g[y0*gw+x0]*(1-dx)+g[y0*gw+x1]*dx;val bottom=g[y1*gw+x0]*(1-dx)+g[y1*gw+x1]*dx
+  return top*(1-dy)+bottom*dy
+ }
+ val threshold=t.coerceIn(5,110).toFloat()
+ for(y in 0 until h)for(x in 0 until w){
+  val i=y*w+x;val c=pixels[i]
+  val dr=sample(br,x,y)-C.red(c);val dg=sample(bg,x,y)-C.green(c);val db=sample(bb,x,y)-C.blue(c)
+  val distance=kotlin.math.sqrt(dr*dr+dg*dg+db*db)
+  val alpha=(((distance-threshold)/(441.7f-threshold))*255f).toInt().coerceIn(0,255)*C.alpha(c)/255
+  pixels[i]=if(alpha<4)C.TRANSPARENT else if(color==null)C.argb(alpha,C.red(c),C.green(c),C.blue(c))else C.argb(alpha,C.red(color),C.green(color),C.blue(color))
+ }
+ return Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
 }
 
 private fun decodeScaled(context:android.content.Context,uri:android.net.Uri):Bitmap?{
