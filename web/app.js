@@ -2,7 +2,7 @@ const $=s=>document.querySelector(s);
 const file=$('#file'),tol=$('#tol'),value=$('#v'),inkButtons=[...document.querySelectorAll('.swatch')];
 const go=$('#go'),save=$('#save'),original=$('#original'),result=$('#canvas');
 const octx=original.getContext('2d'),ctx=result.getContext('2d',{willReadFrequently:true});
-const status=$('#status');let image=null,objectUrl=null,selected='original';
+const trim=$('#trim');const status=$('#status');let image=null,objectUrl=null,selected='original';
 tol.addEventListener('input',()=>value.textContent=tol.value);
 inkButtons.forEach(btn=>btn.addEventListener('click',()=>{inkButtons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');selected=btn.dataset.color;}));
 file.addEventListener('change',()=>{
@@ -43,7 +43,7 @@ go.addEventListener('click',()=>{
    const alpha=Math.max(0,Math.min(255,Math.round((distance-t)*255/(441.7-t))));data[i+3]=Math.round(alpha*data[i+3]/255);if(alpha<4)data[i+3]=0;
    if(rgb){data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];}
   }
-  ctx.putImageData(pixels,0,0);result.style.display='block';$('#empty-result').style.display='none';save.disabled=false;status.textContent='Готово! Проверьте тонкие линии и скачайте PNG.';
+  if(trim.checked){let left=w,top=h,right=-1,bottom=-1;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(data[(y*w+x)*4+3]>8){if(x<left)left=x;if(x>right)right=x;if(y<top)top=y;if(y>bottom)bottom=y;}if(right>=left&&bottom>=top){const pad=Math.max(3,Math.floor(Math.min(w,h)/100));left=Math.max(0,left-pad);top=Math.max(0,top-pad);right=Math.min(w-1,right+pad);bottom=Math.min(h-1,bottom+pad);const cw=right-left+1,ch=bottom-top+1,cropped=new ImageData(cw,ch);for(let y=0;y<ch;y++){const from=((top+y)*w+left)*4,to=y*cw*4;cropped.data.set(data.subarray(from,from+cw*4),to);}result.width=cw;result.height=ch;ctx.putImageData(cropped,0,0);}else{ctx.putImageData(pixels,0,0);}}else{result.width=w;result.height=h;ctx.putImageData(pixels,0,0);}result.style.display='block';$('#empty-result').style.display='none';save.disabled=false;status.textContent='Готово! Проверьте тонкие линии и скачайте PNG.';
  }catch(err){status.textContent='Не удалось обработать изображение. Попробуйте фото меньшего размера.';}
  finally{go.disabled=false;go.innerHTML='<span>✦</span> Удалить фон';}
 });
