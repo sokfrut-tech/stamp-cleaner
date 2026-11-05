@@ -2,8 +2,8 @@ const $=s=>document.querySelector(s);
 const file=$('#file'),tol=$('#tol'),value=$('#v'),inkButtons=[...document.querySelectorAll('.swatch')];
 const go=$('#go'),save=$('#save'),original=$('#original'),result=$('#canvas');
 const octx=original.getContext('2d'),ctx=result.getContext('2d',{willReadFrequently:true});
-const trim=$('#trim');const status=$('#status');let image=null,objectUrl=null,selected='original';
-tol.addEventListener('input',()=>value.textContent=tol.value);
+const trim=$('#trim');const mode=$('#mode');const status=$('#status');let image=null,objectUrl=null,selected='original';
+tol.addEventListener('input',()=>value.textContent=tol.value);\nmode.addEventListener('change',()=>{tol.value=mode.value==='signature'?24:mode.value==='text'?48:38;value.textContent=tol.value;});
 inkButtons.forEach(btn=>btn.addEventListener('click',()=>{inkButtons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');selected=btn.dataset.color;}));
 file.addEventListener('change',()=>{
  const f=file.files&&file.files[0];if(!f)return;
