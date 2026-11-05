@@ -75,3 +75,13 @@ test('thin one-pixel ink strokes stay crisp and opaque at their center',()=>{
  for(let x=24;x<72;x++)assert.ok(out.data[(48*w+x)*4+3]>220,'one-pixel core must remain solid');
  assert.equal(out.data[(47*w+48)*4+3],0,'adjacent paper must stay transparent');
 });
+
+test('Original mode preserves natural ink color variation instead of flattening every stroke to one blue',()=>{
+ const w=96,h=96,d=new Uint8ClampedArray(w*h*4);
+ for(let i=0;i<d.length;i+=4){d[i]=245;d[i+1]=242;d[i+2]=235;d[i+3]=255;}
+ for(let x=20;x<76;x++){const i=(48*w+x)*4;d[i]=x<48?18:35;d[i+1]=x<48?42:62;d[i+2]=x<48?132:168;}
+ const out=processImageData(d,w,h,8,null,false);
+ const left=(48*w+30)*4,right=(48*w+65)*4;
+ assert.notDeepEqual([...out.data.slice(left,left+3)],[...out.data.slice(right,right+3)],'original mode must retain natural ink color variation');
+ assert.ok(out.data[left+3]>220&&out.data[right+3]>220,'both ink sections remain opaque');
+});
