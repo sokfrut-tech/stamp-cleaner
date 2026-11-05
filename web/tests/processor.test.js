@@ -31,3 +31,13 @@ test('empty or malformed input is handled safely',()=>{
  const out=processImageData(blank,32,32,18,null,true);assert.equal(out.width,32);assert.equal(out.height,32);
  assert.throws(()=>processImageData(new Uint8ClampedArray(3),2,2,18),/Invalid image data/);
 });
+
+test('very pale blue ink retains visible alpha at low sensitivity',()=>{
+ const w=96,h=96,d=new Uint8ClampedArray(w*h*4);
+ for(let i=0;i<d.length;i+=4){d[i]=248;d[i+1]=248;d[i+2]=246;d[i+3]=255;}
+ for(let x=24;x<72;x++){const y=48,i=(y*w+x)*4;d[i]=226;d[i+1]=230;d[i+2]=238;}
+ const out=processImageData(d,w,h,8,null,false);
+ const alpha=out.data[(48*w+48)*4+3];
+ assert.ok(alpha>=20, 'pale blue ink should remain visible');
+ assert.equal(out.data[3],0,'paper background should be transparent');
+});
