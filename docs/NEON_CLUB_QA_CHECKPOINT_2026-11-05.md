@@ -57,3 +57,8 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - The previously persisted URI grant was not enough to restore the chosen background after process restart because the URI itself was only held in Compose memory. Fixed this by storing the selected URI, media type, and motion toggle in app-private SharedPreferences and restoring them when the screen starts.
 - This stores only the local document URI and UI preferences; it does not copy the user's media file or request broad storage access.
 - Commit: `f870a018fa62fb4351fc599cd71db3c9440ee19e`. Build verification for this latest persistence change is pending.
+
+
+## Small-screen layout refinement
+- Reserved a 58 dp top inset in the scrollable StampCleaner screen so the floating background picker/reset/motion controls no longer sit over the app title/header on narrow phones. The rest of the screen remains vertically scrollable; processing logic and image preview/export behavior are unchanged.
+- Commit: `eae8ab5dd7c2f999282ff5879bd91287c1d0d02b`. Build and visual device verification pending.
