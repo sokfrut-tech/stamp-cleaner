@@ -13,9 +13,6 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
-    env:
-      ANDROID_HOME: ${{ env.ANDROID_HOME }}
-      ANDROID_SDK_ROOT: ${{ env.ANDROID_HOME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
