@@ -102,6 +102,7 @@ private fun ClubVideoBackground(uri: Uri) {
     var player by remember(uri) { mutableStateOf<VideoView?>(null) }
     var resumeAfterPause by remember(uri) { mutableStateOf(false) }
     var resumePosition by remember(uri) { mutableIntStateOf(0) }
+    var playbackError by remember(uri) { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, player, uri) {
         val observer = LifecycleEventObserver { _, event ->
@@ -139,6 +140,11 @@ private fun ClubVideoBackground(uri: Uri) {
                     isFocusable = false
                     tag = uri.toString()
                     setVideoURI(uri)
+                    setOnErrorListener { _, _, _ ->
+                        playbackError = true
+                        visibility = android.view.View.GONE
+                        true
+                    }
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = true
                         mediaPlayer.setVolume(0f, 0f)
@@ -163,8 +169,14 @@ private fun ClubVideoBackground(uri: Uri) {
             onRelease = { view ->
                 if (player === view) player = null
                 view.setOnPreparedListener(null)
+                view.setOnErrorListener(null)
                 view.stopPlayback()
             }
         )
+    }
+    if (playbackError) {
+        Box(Modifier.fillMaxSize().background(Color(0xFF170D20)), contentAlignment = Alignment.Center) {
+            Text("Не удалось воспроизвести это видео", color = Color(0xFFFFB5E8), style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
