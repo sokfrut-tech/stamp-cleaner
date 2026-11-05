@@ -96,13 +96,14 @@ private fun ClubVideoBackground(uri: Uri) {
     DisposableEffect(lifecycleOwner, player, uri) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
+                Lifecycle.Event.ON_PAUSE -> {
                     player?.let { view ->
                         resumePosition = view.currentPosition
                         resumeAfterPause = view.isPlaying
                         view.pause()
                     }
                 }
+                Lifecycle.Event.ON_STOP -> player?.pause()
                 Lifecycle.Event.ON_RESUME -> {
                     player?.let { view ->
                         if (resumeAfterPause) {
@@ -126,6 +127,7 @@ private fun ClubVideoBackground(uri: Uri) {
                 VideoView(context).apply {
                     isClickable = false
                     isFocusable = false
+                    tag = uri.toString()
                     setVideoURI(uri)
                     setOnPreparedListener { mediaPlayer ->
                         mediaPlayer.isLooping = true
