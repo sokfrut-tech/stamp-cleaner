@@ -132,3 +132,14 @@ Create synthetic fixtures and, where available, user-consented test scans:
 ## Current known baseline
 
 The current main branch uses a simple global luminance threshold in Android and web. This is known to leave paper texture/shadows and/or remove pale strokes. The user has already tested it and reported that the output still looks like it has a background. Therefore, the next implementation must prioritize a better extraction algorithm; cosmetic UI work is secondary.
+
+
+## Implementation progress — 2026-11-05
+
+- Android and web now expose explicit content modes: signature, stamp, and text stamp.
+- Mode selection applies a starting sensitivity value (signature 24, stamp 38, text stamp 48); the user can still adjust the slider.
+- Automatic transparent-bound crop is implemented in Android and web with a small safety margin and an opt-out checkbox.
+- Android preview uses a checkerboard background; the checkerboard is not part of the exported bitmap.
+- The mode-specific values are presets over the current shared adaptive extraction algorithm, not three separate extraction engines. This limitation must remain visible until image-corpus testing proves mode-specific processing quality.
+- Physical-size controls, DPI-aware PNG metadata, EXIF orientation, manual crop, undo, and automated image-quality fixtures remain pending.
+- Latest CI run at this update: run #67 (42067953280); JavaScript syntax step passed, Android compile/build was still running. Do not treat this as a verified release until the job and artifact complete.
