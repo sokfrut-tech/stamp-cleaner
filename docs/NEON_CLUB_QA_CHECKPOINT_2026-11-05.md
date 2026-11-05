@@ -40,3 +40,6 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - Commits: `d3293bb88c192924ad02cff2edb7652bb0378e5c`, `220af05a2ea08dd8316690eb0f347e08af914367`, `dad2fd3b502cb8bb5858966e3709520e94d13356`.
 - Fresh Android CI runs for the dependency and player commits: `42091131768`, `42091140463`, `42091145477`. At checkpoint update time these were still in progress; do not mark the new player changes as build-verified until a completed successful run is observed.
 - Physical-device QA remains required: verify background playback pause/resume, motion toggle, local URI persistence after app restart, and confirm all stamp-cleaning workflows remain unchanged.
+
+- Additional guard: if the video preparation callback fires while the Activity is already stopped, it no longer starts playback in the background; playback waits for the lifecycle resume event. Commit: `5e598a836fac5f7c78521b786a8f8be2024e0569`.
+- CI runner status note: runs `42091131768`, `42091140463`, `42091145477`, `42091171173`, `42091187047`, and `42091248568` reached post-job cleanup but GitHub still reported `in_progress` with no conclusion/artifact at the latest inspection. Treat the current source as not yet build-verified.
