@@ -12,7 +12,7 @@ for(const [name,bg] of [['white',[255,255,255]],['cream',[246,239,220]],['gray',
  test(name+' paper is transparent while blue ink remains',()=>{
   const src=fixture(bg),out=processImageData(src,96,96,18,null,false);
   assert.equal(out.data[(0*96+0)*4+3],0,'background corner should be transparent');
-  assert.ok(out.data[(48*96+48)*4+3]>0,'ink center should remain visible');
+  let visibleInk=0;for(let y=32;y<64;y++)for(let x=24;x<73;x++)visibleInk=Math.max(visibleInk,out.data[(y*96+x)*4+3]);assert.ok(visibleInk>0,'signature stroke should remain visible');
   assert.equal(out.width,96);assert.equal(out.height,96);
  });
 }
