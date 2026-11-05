@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.util.zip.CRC32
 
 private enum class ContentMode(val title:String,val hint:String){SIGNATURE("Подпись","Сохраняем тонкие рукописные линии"),STAMP("Печать","Сохраняем контур и детали оттиска"),TEXT("Текстовый штамп","Сохраняем мелкие буквы и цифры")}
 private data class Ink(val name:String,val color:Int?)
@@ -42,6 +44,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
 @Composable fun StampCleanerScreen(){
  val ctx=LocalContext.current;val scope=rememberCoroutineScope()
  var src by remember{mutableStateOf<Bitmap?>(null)};var dst by remember{mutableStateOf<Bitmap?>(null)}
+ var widthMm by remember{mutableStateOf("40")};var heightMm by remember{mutableStateOf("40")};var dpi by remember{mutableIntStateOf(300)}
  var tol by remember{mutableFloatStateOf(38f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
@@ -49,7 +52,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  }
  val savePng=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")){uri->
   val bitmap=dst
-  if(uri!=null&&bitmap!=null)scope.launch{busy=true;try{val ok=withContext(Dispatchers.IO){ctx.contentResolver.openOutputStream(uri)?.use{bitmap.compress(Bitmap.CompressFormat.PNG,100,it)}?:false};Toast.makeText(ctx,if(ok)"PNG сохранён." else "Не удалось сохранить PNG.",Toast.LENGTH_LONG).show()}catch(e:Exception){Toast.makeText(ctx,"Ошибка сохранения PNG.",Toast.LENGTH_LONG).show()}finally{busy=false}}
+  if(uri!=null&&bitmap!=null)scope.launch{busy=true;try{val ok=withContext(Dispatchers.IO){ctx.contentResolver.openOutputStream(uri)?.use{out->out.write(exportPng(bitmap,widthMm.toFloat(),heightMm.toFloat(),dpi));true}?:false};Toast.makeText(ctx,if(ok)"PNG сохранён." else "Не удалось сохранить PNG.",Toast.LENGTH_LONG).show()}catch(e:Exception){Toast.makeText(ctx,"Ошибка сохранения PNG.",Toast.LENGTH_LONG).show()}finally{busy=false}}
  }
  Column(Modifier.fillMaxSize().background(Color(0xFF142720)).verticalScroll(rememberScrollState()).padding(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)){
   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
@@ -87,6 +90,10 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   Panel("04  Прозрачный результат",Icons.Default.SaveAlt){
    if(dst==null)Text("Здесь появится ваша печать или подпись.",color=Color(0xFFB6CBBF)) else{
     Preview(dst!!,"PNG без фона")
+    Text("Физический размер при экспорте",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
+    Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedTextField(value=widthMm,onValueChange={widthMm=it},label={Text("Ширина, мм")},modifier=Modifier.weight(1f),singleLine=true);OutlinedTextField(value=heightMm,onValueChange={heightMm=it},label={Text("Высота, мм")},modifier=Modifier.weight(1f),singleLine=true)}
+    Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf(150,300,600).forEach{value->FilterChip(selected=dpi==value,onClick={dpi=value},label={Text("$value DPI")})}}
+    Text("PNG получит размер в пикселях и метаданные DPI. При вставке в Word проверьте масштаб.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
     Button(enabled=!busy,onClick={savePng.launch("stamp-cleaner-${System.currentTimeMillis()}.png")},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
    }
   }
@@ -152,4 +159,17 @@ private fun decodeScaled(context:android.content.Context,uri:android.net.Uri):Bi
  while(maxOf(bounds.outWidth/sample,bounds.outHeight/sample)>2500)sample*=2
  val options=BitmapFactory.Options().apply{inSampleSize=sample;inPreferredConfig=Bitmap.Config.ARGB_8888}
  return context.contentResolver.openInputStream(uri)?.use{BitmapFactory.decodeStream(it,null,options)}
+}
+
+private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteArray{
+ require(widthMm in 5f..300f&&heightMm in 5f..300f){"Размер должен быть от 5 до 300 мм"}
+ val w=(widthMm*dpi/25.4f).toInt().coerceAtLeast(1);val h=(heightMm*dpi/25.4f).toInt().coerceAtLeast(1)
+ require(w.toLong()*h<=40_000_000L){"Слишком большое изображение"}
+ val scaled=Bitmap.createScaledBitmap(source,w,h,true)
+ val raw=ByteArrayOutputStream();scaled.compress(Bitmap.CompressFormat.PNG,100,raw);if(scaled!==source)scaled.recycle()
+ val png=raw.toByteArray();val ppm=(dpi/0.0254).toLong()
+ val chunkData=ByteArrayOutputStream().apply{write(byteArrayOf(0x70,0x48,0x59,0x73));write(byteArrayOf((ppm shr 24).toByte(),(ppm shr 16).toByte(),(ppm shr 8).toByte(),ppm.toByte(),(ppm shr 24).toByte(),(ppm shr 16).toByte(),(ppm shr 8).toByte(),ppm.toByte(),1))}.toByteArray()
+ val crc=CRC32().apply{update(chunkData)}.value
+ val chunk=ByteArrayOutputStream().apply{write(byteArrayOf(0,0,0,9));write(chunkData);write(byteArrayOf((crc shr 24).toByte(),(crc shr 16).toByte(),(crc shr 8).toByte(),crc.toByte()))}.toByteArray()
+ return ByteArrayOutputStream().apply{write(png,0,33);write(chunk);write(png,33,png.size-33)}.toByteArray()
 }
