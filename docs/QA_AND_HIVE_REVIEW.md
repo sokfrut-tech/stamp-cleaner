@@ -46,3 +46,27 @@ These are sent requests only. No substantive Claude or Gemini review response ha
 - PNG export now uses Android's Storage Access Framework document picker, avoiding broad storage permissions across Android versions. Verify the picker and file write on API 26, 28, 29, and 34.
 - The simple luminance threshold may remove pale ink or retain shadows; test with real stamps/signatures under uneven lighting.
 - The result should be visually inspected before export; avoid promising perfect separation for every scan.
+
+
+## ChatGPT self-review and first successful APK build
+
+### Successful CI evidence
+- Workflow: `Build StampCleaner APK`
+- Run: #31, ID `42064189821`
+- Source commit built: `fba22646a0a5d2db309b674fd4675ec258883eff`
+- Result: **success**. Checkout, JDK 17, Gradle 8.7, Android SDK package installation, wrapper generation, Kotlin compilation, `assembleDebug`, and artifact upload all completed successfully.
+- Gradle reported: `BUILD SUCCESSFUL`; 35 actionable tasks executed.
+- Artifact: `StampCleaner-Android-APK`, artifact ID `13433770600`, ZIP size 15,100,309 bytes.
+- Artifact ZIP SHA-256: `44e49f8b600f3d0148bb893ac1e4da396f674e53580c8c7883116ec67b2c65f7`.
+- Extracted APK: `app-debug.apk`, 15,529,618 bytes; SHA-256 `e5ff1881d8837a4dfec866deedecf8329f831533bb0a426ecbf04deb3190343f`.
+- The artifact was downloaded and its ZIP contents and Android package file signature were checked locally.
+- Web JavaScript syntax was checked separately with `node --check` against the current `web/app.js`; it exited successfully.
+
+### Self-review findings (not an independent audit)
+- **P2 — Image quality limitation:** the current background-removal algorithm is a global luminance threshold. Pale ink, colored paper, shadows, and uneven illumination can cause lost strokes or residual background. Keep the sensitivity control and require visual preview; consider adaptive thresholding and a background sampling mode in a later iteration.
+- **P2 — EXIF orientation:** Android bitmap decoding does not currently apply EXIF orientation. Some phone photos may appear rotated; add EXIF-aware orientation handling and test portrait/landscape camera images.
+- **P2 — Runtime coverage:** no emulator or physical-device interaction test has yet been recorded. The CI build proves compilation and APK packaging, not picker behavior, image quality, file saving, or installability on a user's specific phone.
+- No P0/P1 code defect was established by this source inspection. This is not a substitute for a device test or security audit.
+
+### Release gate
+The APK build is now verified and an installable debug APK artifact exists. Before calling the product fully released, install and test the APK on a real Android device, test a set of real stamps/signatures, and verify the saved PNG retains transparency. GitHub Pages deployment still requires merging the web workflow to `main` and confirming the deployment run.
