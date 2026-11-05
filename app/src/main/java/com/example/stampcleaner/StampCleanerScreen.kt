@@ -61,60 +61,60 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   val bitmap=dst
   if(uri!=null&&bitmap!=null)scope.launch{busy=true;try{val ok=withContext(Dispatchers.IO){ctx.contentResolver.openOutputStream(uri)?.use{out->out.write(exportPng(bitmap,widthMm.toFloat(),heightMm.toFloat(),dpi));true}?:false};Toast.makeText(ctx,if(ok)"PNG сохранён." else "Не удалось сохранить PNG.",Toast.LENGTH_LONG).show()}catch(e:Exception){Toast.makeText(ctx,"Ошибка сохранения PNG.",Toast.LENGTH_LONG).show()}finally{busy=false}}
  }
- Column(Modifier.fillMaxSize().background(Color(0xFF142720)).verticalScroll(rememberScrollState()).padding(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)){
+ Column(Modifier.fillMaxSize().background(Color.Transparent).verticalScroll(rememberScrollState()).padding(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)){
   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
-   Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFF315747)),contentAlignment=Alignment.Center){Text("🌰",style=MaterialTheme.typography.headlineMedium)}
-   Column(Modifier.weight(1f)){Text("StampCleaner",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.ExtraBold,color=Color(0xFFFFD18A));Text("Лесная мастерская PNG",color=Color(0xFFB6CBBF))}
+   Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFF52235D)),contentAlignment=Alignment.Center){Text("✦",style=MaterialTheme.typography.headlineMedium)}
+   Column(Modifier.weight(1f)){Text("StampCleaner",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.ExtraBold,color=Color(0xFFFFB5E8));Text("NEON CLUB · STAMP STUDIO",color=Color(0xFFD2B6D4))}
    Text("1.1",color=Color(0xFF9FE3D1))
   }
-  Surface(shape=RoundedCornerShape(22.dp),color=Color(0xFF254438)){
+  Surface(shape=RoundedCornerShape(22.dp),color=Color(0xFF32183D)){
    Row(Modifier.fillMaxWidth().padding(17.dp),verticalAlignment=Alignment.CenterVertically){
-    Column(Modifier.weight(1f)){Text("Спасаем важные чернила!",style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,color=Color(0xFFFFE2B5));Text("Убираем бумагу, оставляем подпись и печать — на прозрачном фоне.",color=Color(0xFFD2E1D8))}
-    Text("🐿️",style=MaterialTheme.typography.displayMedium)
+    Column(Modifier.weight(1f)){Text("Твои чернила. Твой стиль.",style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,color=Color(0xFFFFD7F2));Text("Убираем бумагу, оставляем подпись и печать — на прозрачном фоне.",color=Color(0xFFD2E1D8))}
+    Text("✧",style=MaterialTheme.typography.displayMedium)
    }
   }
   Panel("01  Выберите изображение",Icons.Default.ImageIcon){
-   Button(onClick={picker.launch("image/*")},enabled=!busy,modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){
+   Button(onClick={picker.launch("image/*")},enabled=!busy,modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFF9DDF),contentColor=Color(0xFF210D2B))){
     Icon(Icons.Default.ImageIcon,null);Spacer(Modifier.width(8.dp));Text(if(src==null)"Выбрать фото или скан" else "Выбрать другое фото",fontWeight=FontWeight.Bold)
    }
    src?.let{Preview(it,"Исходное изображение")}
   }
   Panel("02  Настройте очистку",Icons.Default.Tune){
-   Row(verticalAlignment=Alignment.CenterVertically){Text("Чувствительность",Modifier.weight(1f),color=Color(0xFFE8F0EA));Text(tol.toInt().toString(),color=Color(0xFFFFD18A),fontWeight=FontWeight.Bold)}
-   Slider(value=tol,onValueChange={tol=it},valueRange=5f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))
-   Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFF79D6C2)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)}}
-   Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Palette,null,tint=Color(0xFF8BDCC9));Spacer(Modifier.width(8.dp));Text("Цвет чернил",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold)}
+   Row(verticalAlignment=Alignment.CenterVertically){Text("Чувствительность",Modifier.weight(1f),color=Color(0xFFFFEAF8));Text(tol.toInt().toString(),color=Color(0xFFFFB5E8),fontWeight=FontWeight.Bold)}
+   Slider(value=tol,onValueChange={tol=it},valueRange=5f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFF9DDF),activeTrackColor=Color(0xFFD28BFF)))
+   Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFFD28BFF)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFFFEAF8),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)}}
+   Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Palette,null,tint=Color(0xFFE49BFF));Spacer(Modifier.width(8.dp));Text("Цвет чернил",color=Color(0xFFFFEAF8),fontWeight=FontWeight.SemiBold)}
    inks.chunked(3).forEach{line->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){line.forEach{choice->
     val active=choice==ink
-    OutlinedButton(onClick={ink=choice},modifier=Modifier.weight(1f),shape=RoundedCornerShape(12.dp),contentPadding=PaddingValues(horizontal=2.dp,vertical=8.dp),colors=ButtonDefaults.outlinedButtonColors(containerColor=if(active)Color(0xFF3D6251)else Color.Transparent,contentColor=if(active)Color(0xFFFFD18A)else Color(0xFFE0EAE3))){
+    OutlinedButton(onClick={ink=choice},modifier=Modifier.weight(1f),shape=RoundedCornerShape(12.dp),contentPadding=PaddingValues(horizontal=2.dp,vertical=8.dp),colors=ButtonDefaults.outlinedButtonColors(containerColor=if(active)Color(0xFF3D6251)else Color.Transparent,contentColor=if(active)Color(0xFFFFB5E8)else Color(0xFFF4DFF3))){
      choice.color?.let{Box(Modifier.size(9.dp).clip(CircleShape).background(Color(it)))};if(choice.color!=null)Spacer(Modifier.width(4.dp));Text(choice.name,style=MaterialTheme.typography.labelSmall)
     }
    };repeat(3-line.size){Spacer(Modifier.weight(1f))}}}
-   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;val crop=trim;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk,crop)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF79D6C2),contentColor=Color(0xFF142720))){
+   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;val crop=trim;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk,crop)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFD28BFF),contentColor=Color(0xFF0B0711))){
     Icon(Icons.Default.AutoFixHigh,null);Spacer(Modifier.width(8.dp));Text(if(busy)"Обрабатываем…" else "Удалить фон",fontWeight=FontWeight.Bold)
    }
   }
   Panel("04  Прозрачный результат",Icons.Default.SaveAlt){
-   if(dst==null)Text("Здесь появится ваша печать или подпись.",color=Color(0xFFB6CBBF)) else{
+   if(dst==null)Text("Здесь появится ваша печать или подпись.",color=Color(0xFFD2B6D4)) else{
     CropPreview(dst!!){cropped->dst=cropped;status="Ручная обрезка применена."}
-    Text("Физический размер при экспорте",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
+    Text("Физический размер при экспорте",color=Color(0xFFFFD7F2),fontWeight=FontWeight.Bold)
     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedTextField(value=widthMm,onValueChange={widthMm=it},label={Text("Ширина, мм")},modifier=Modifier.weight(1f),singleLine=true);OutlinedTextField(value=heightMm,onValueChange={heightMm=it},label={Text("Высота, мм")},modifier=Modifier.weight(1f),singleLine=true)}
     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf(150,300,600).forEach{value->FilterChip(selected=dpi==value,onClick={dpi=value},label={Text("$value DPI")})}}
-    Text("PNG получит заданный физический холст и DPI. Подпись не увеличивается искусственно — так сохраняются исходные пиксели.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
-    Button(enabled=!busy,onClick={savePng.launch("stamp-cleaner-${System.currentTimeMillis()}.png")},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
+    Text("PNG получит заданный физический холст и DPI. Подпись не увеличивается искусственно — так сохраняются исходные пиксели.",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)
+    Button(enabled=!busy,onClick={savePng.launch("stamp-cleaner-${System.currentTimeMillis()}.png")},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFF9DDF),contentColor=Color(0xFF210D2B))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
    }
   }
-  Text(status,color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
+  Text(status,color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)
   Text("Совет: равномерный светлый фон помогает сохранить тонкие линии.",color=Color(0xFF8FA99A),style=MaterialTheme.typography.bodySmall)
  }
 }
 @Composable private fun Panel(title:String,icon:androidx.compose.ui.graphics.vector.ImageVector,content:@Composable ColumnScope.()->Unit){
- Surface(shape=RoundedCornerShape(21.dp),color=Color(0xFF20372F)){Column(Modifier.fillMaxWidth().padding(15.dp),verticalArrangement=Arrangement.spacedBy(11.dp)){Row(verticalAlignment=Alignment.CenterVertically){Icon(icon,null,tint=Color(0xFFFFC66D));Spacer(Modifier.width(9.dp));Text(title,color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold,style=MaterialTheme.typography.titleMedium)};content()}}
+ Surface(shape=RoundedCornerShape(21.dp),color=Color(0xFF24132E)){Column(Modifier.fillMaxWidth().padding(15.dp),verticalArrangement=Arrangement.spacedBy(11.dp)){Row(verticalAlignment=Alignment.CenterVertically){Icon(icon,null,tint=Color(0xFFFF9DDF));Spacer(Modifier.width(9.dp));Text(title,color=Color(0xFFFFD7F2),fontWeight=FontWeight.Bold,style=MaterialTheme.typography.titleMedium)};content()}}
 }
 @Composable private fun Preview(bitmap:Bitmap,label:String){
- Box(Modifier.fillMaxWidth().heightIn(max=260.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFF3F4EF)),contentAlignment=Alignment.Center){
+ Box(Modifier.fillMaxWidth().heightIn(max=260.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFF28172E)),contentAlignment=Alignment.Center){
   Canvas(Modifier.matchParentSize()){
-   val cell=18.dp.toPx();val light=Color(0xFFF3F4EF);val dark=Color(0xFFD8DDD5)
+   val cell=18.dp.toPx();val light=Color(0xFF28172E);val dark=Color(0xFF4A3152)
    val cols=(size.width/cell).toInt()+1;val rows=(size.height/cell).toInt()+1
    for(y in 0 until rows)for(x in 0 until cols){
     drawRect(if((x+y)%2==0)light else dark,topLeft=androidx.compose.ui.geometry.Offset(x*cell,y*cell),size=androidx.compose.ui.geometry.Size(cell,cell))
@@ -222,16 +222,16 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
  var canvasWidth by remember{mutableFloatStateOf(0f)}
  val canvasHeightPx=with(LocalDensity.current){160.dp.toPx()}
  Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
-  Text("Ручная обрезка",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
-  Text("Проведите пальцем по изображению, чтобы выделить нужную область.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
+  Text("Ручная обрезка",color=Color(0xFFFFD7F2),fontWeight=FontWeight.Bold)
+  Text("Проведите пальцем по изображению, чтобы выделить нужную область.",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)
   Canvas(Modifier.fillMaxWidth().height(160.dp).onSizeChanged{canvasWidth=it.width.toFloat()}.pointerInput(bitmap){detectDragGestures(onDragStart={p->gestureStart=p;initialSelection=selection;val r=selection;gestureMode=when{r==null->"draw";kotlin.math.hypot(p.x-r.right,p.y-r.bottom)<34f->"resize";p.x in r.left..r.right&&p.y in r.top..r.bottom->"move";else->"draw"};if(gestureMode=="draw"){start=p;end=p;selection=null}},onDragEnd={val a=start;val b=end;if(gestureMode=="draw"&&a!=null&&b!=null)selection=Rect(minOf(a.x,b.x),minOf(a.y,b.y),maxOf(a.x,b.x),maxOf(a.y,b.y))},onDragCancel={start=null;end=null}){change,_->val p=change.position;val r=initialSelection;when(gestureMode){"draw"->end=p;"move"->{if(r!=null){val dx=p.x-gestureStart.x;val dy=p.y-gestureStart.y;val w=r.width;val h=r.height;val left=(r.left+dx).coerceIn(0f,size.width-w);val top=(r.top+dy).coerceIn(0f,size.height-h);selection=Rect(left,top,left+w,top+h)}};"resize"->{if(r!=null){val right:Float=p.x.coerceAtLeast(r.left+8f).coerceAtMost(size.width.toFloat());val bottom:Float=p.y.coerceAtLeast(r.top+8f).coerceAtMost(size.height.toFloat());selection=Rect(r.left,r.top,right,bottom)}}};change.consume()}}){
    val scale=minOf(size.width/bitmap.width,size.height/bitmap.height);val dw=bitmap.width*scale;val dh=bitmap.height*scale;val ox=(size.width-dw)/2f;val oy=(size.height-dh)/2f
-   val cell=18.dp.toPx();val light=Color(0xFFF3F4EF);val dark=Color(0xFFD8DDD5)
+   val cell=18.dp.toPx();val light=Color(0xFF28172E);val dark=Color(0xFF4A3152)
    val cols=(size.width/cell).toInt()+1;val rows=(size.height/cell).toInt()+1
    for(y in 0 until rows)for(x in 0 until cols){drawRect(if((x+y)%2==0)light else dark,topLeft=Offset(x*cell,y*cell),size=androidx.compose.ui.geometry.Size(cell,cell))}
    drawImage(bitmap.asImageBitmap(),dstOffset=androidx.compose.ui.unit.IntOffset(ox.toInt(),oy.toInt()),dstSize=androidx.compose.ui.unit.IntSize(dw.toInt(),dh.toInt()))
    val r=selection?:if(start!=null&&end!=null)Rect(minOf(start!!.x,end!!.x),minOf(start!!.y,end!!.y),maxOf(start!!.x,end!!.x),maxOf(start!!.y,end!!.y))else null
-   r?.let{drawRect(Color(0xFFFFC66D),topLeft=Offset(it.left,it.top),size=androidx.compose.ui.geometry.Size(it.width,it.height),style=Stroke(3.dp.toPx()));drawCircle(Color(0xFFFFC66D),radius=7.dp.toPx(),center=Offset(it.right,it.bottom))}
+   r?.let{drawRect(Color(0xFFFF9DDF),topLeft=Offset(it.left,it.top),size=androidx.compose.ui.geometry.Size(it.width,it.height),style=Stroke(3.dp.toPx()));drawCircle(Color(0xFFFF9DDF),radius=7.dp.toPx(),center=Offset(it.right,it.bottom))}
   }
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
    Button(enabled=selection!=null&&selection!!.width>8&&selection!!.height>8,onClick={val r=selection?:return@Button;val scale=minOf(canvasWidth/bitmap.width,canvasHeightPx);val viewW=bitmap.width*scale;val viewH=bitmap.height*scale;val ox=(canvasWidth-viewW)/2f;val oy=(canvasHeightPx-viewH)/2f;val l=((r.left-ox)/scale).toInt().coerceIn(0,bitmap.width-1);val t=((r.top-oy)/scale).toInt().coerceIn(0,bitmap.height-1);val rr=((r.right-ox)/scale).toInt().coerceIn(l+1,bitmap.width);val bb=((r.bottom-oy)/scale).toInt().coerceIn(t+1,bitmap.height);onCrop(Bitmap.createBitmap(bitmap,l,t,rr-l,bb-t))},modifier=Modifier.weight(1f).height(44.dp),contentPadding=PaddingValues(horizontal=6.dp,vertical=4.dp)){Text("Обрезать",maxLines=1,style=MaterialTheme.typography.labelLarge)}
