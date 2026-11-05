@@ -51,3 +51,9 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - Run `42091565324` for documentation checkpoint commit `cdf866c9570abb9d1018a0f3b6405cf94841dba3` was still `in_progress` at latest inspection. The Android source itself is covered by the successful `42091518642` run.
 - Resource tree currently contains the adaptive launcher icon XML at `mipmap-anydpi-v26/ic_launcher.xml` and foreground vector; manifest references it for both `icon` and `roundIcon`. Since `minSdk=26`, no pre-26 legacy icon density assets are required. Visual launcher-mask appearance still needs device inspection.
 - No physical-device/emulator interaction test has been performed; CI build success does not prove touch layering, actual playback lifecycle behavior, or image-processing quality.
+
+
+## Persistent background selection — implementation update
+- The previously persisted URI grant was not enough to restore the chosen background after process restart because the URI itself was only held in Compose memory. Fixed this by storing the selected URI, media type, and motion toggle in app-private SharedPreferences and restoring them when the screen starts.
+- This stores only the local document URI and UI preferences; it does not copy the user's media file or request broad storage access.
+- Commit: `f870a018fa62fb4351fc599cd71db3c9440ee19e`. Build verification for this latest persistence change is pending.
