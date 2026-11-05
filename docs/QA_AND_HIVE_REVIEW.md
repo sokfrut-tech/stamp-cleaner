@@ -79,3 +79,24 @@ The APK build is now verified and an installable debug APK artifact exists. Befo
 - The user instructed not to wait for Claude/Gemini responses. Their inbox requests remain informational only; this project proceeds under ChatGPT self-review.
 - GitHub Pages deployment is expected from the merge push, but the deployment result and public URL availability have not been confirmed through the available GitHub Actions lookup. Do not report the website as live until that check succeeds.
 - Physical Android-device testing remains outstanding.
+
+
+## Smart extraction implementation — first iteration (2026-11-05)
+
+Implemented on `feature/smart-extraction-and-stamp-studio`:
+- Replaced the global luminance-only extraction in Android with a local paper-colour estimate.
+- Replaced the web global luminance loop with the same tile-median background estimation approach.
+- The estimator samples each 24 px tile, uses per-channel medians to reduce the effect of sparse ink, then bilinearly interpolates the estimated paper colour.
+- Alpha is derived from RGB distance to the local paper estimate; ink recolouring is applied after alpha estimation.
+- Image processing remains local; no upload service was added.
+
+### Important limitations
+- This is an initial adaptive heuristic, not a trained segmentation model and not a guarantee that all shadows/forms will be removed.
+- Median tiles can be contaminated by dense stamps or text filling most of a tile; this needs dedicated test fixtures.
+- The Android and browser implementations were manually kept structurally aligned, but automated cross-platform parity tests have not yet been added.
+- EXIF orientation, crop tools, mm/DPI sizing and the constructor are not yet implemented.
+
+### CI
+- Workflow run #37, ID `42066957060`, was observed in progress after the Android and web algorithm changes.
+- Do not call this iteration build-verified until the run concludes successfully and the APK artifact is present.
+- Required next QA: alpha-channel unit fixtures for white/cream/grey paper, gradients, shadows, pale blue ink, thin lines, dense stamps, and recolouring; compare Android and web outputs.
