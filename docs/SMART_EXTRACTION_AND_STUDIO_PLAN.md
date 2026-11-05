@@ -181,3 +181,10 @@ The current main branch uses a simple global luminance threshold in Android and 
 - Updated `.github/workflows/build-apk.yml` to syntax-check both JavaScript files and run `node --test web/tests/*.test.js` before Android compilation.
 - These tests characterize the current adaptive heuristic, not a proof of perfect extraction for arbitrary photos. Dense stamps, strong gradients, shadows and very faint ink still require broader fixtures and real-device validation.
 - Await a fresh CI run for this revision before treating the tests or Android build as passing.
+
+
+### First synthetic test run — diagnosis and correction
+
+- CI run #120 (`42070442608`) passed both JavaScript syntax checks, then failed 3 of 6 synthetic tests at the ink-retention assertion. Android build was correctly skipped by the fail-fast workflow.
+- Root cause was in the fixture assertion, not a demonstrated processor regression: the test drew a curved sinusoidal stroke but sampled a single fixed pixel that was not on the curve. Updated the assertion to scan the defined stroke region and require retained alpha there.
+- New test commit: `92f2530d40d6ae1350dc8af64199edef8b6221d0`. Await the next CI run; no passing claim until confirmed.
