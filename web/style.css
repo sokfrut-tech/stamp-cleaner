@@ -12,3 +12,4 @@ button{font:inherit}.primary,.download{width:100%;margin-top:17px;padding:14px 1
 
 #original,#canvas{display:none}
 \n.crop-option{display:flex;align-items:center;gap:10px;margin:14px 0;padding:11px 12px;border:1px solid #527260;border-radius:12px;background:#1a392f;cursor:pointer}.crop-option input{width:18px;height:18px;accent-color:var(--mint)}.crop-option b,.crop-option small{display:block}.crop-option small{font-size:12px;color:var(--muted)}\n
+.mode-select{width:100%;padding:11px 12px;border:1px solid #527260;border-radius:12px;background:#1a392f;color:var(--cream);font:inherit;outline-color:var(--gold)}.mode-select:focus{border-color:var(--gold)}
