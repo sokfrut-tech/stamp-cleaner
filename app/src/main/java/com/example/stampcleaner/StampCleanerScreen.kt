@@ -100,7 +100,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
     Text("Физический размер при экспорте",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedTextField(value=widthMm,onValueChange={widthMm=it},label={Text("Ширина, мм")},modifier=Modifier.weight(1f),singleLine=true);OutlinedTextField(value=heightMm,onValueChange={heightMm=it},label={Text("Высота, мм")},modifier=Modifier.weight(1f),singleLine=true)}
     Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf(150,300,600).forEach{value->FilterChip(selected=dpi==value,onClick={dpi=value},label={Text("$value DPI")})}}
-    Text("PNG получит размер в пикселях и метаданные DPI. При вставке в Word проверьте масштаб.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
+    Text("PNG получит заданный физический холст и DPI. Подпись не увеличивается искусственно — так сохраняются исходные пиксели.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
     Button(enabled=!busy,onClick={savePng.launch("stamp-cleaner-${System.currentTimeMillis()}.png")},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
    }
   }
@@ -200,8 +200,10 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
  val w=(widthMm*dpi/25.4f).toInt().coerceAtLeast(1);val h=(heightMm*dpi/25.4f).toInt().coerceAtLeast(1)
  require(w.toLong()*h<=40_000_000L){"Слишком большое изображение"}
  val target=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888)
- val scale=minOf(w.toFloat()/source.width,h.toFloat()/source.height);val sw=source.width*scale;val sh=source.height*scale
- android.graphics.Canvas(target).drawBitmap(source,null,android.graphics.RectF((w-sw)/2f,(h-sh)/2f,(w+sw)/2f,(h+sh)/2f),android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG))
+ val scale=minOf(1f,w.toFloat()/source.width,h.toFloat()/source.height);val sw=source.width*scale;val sh=source.height*scale
+ // Never enlarge a signature during export: upscaling invents interpolated pixels and visibly softens fine strokes.
+ val paint=android.graphics.Paint().apply{isFilterBitmap=false;isAntiAlias=false}
+ android.graphics.Canvas(target).drawBitmap(source,null,android.graphics.RectF((w-sw)/2f,(h-sh)/2f,(w+sw)/2f,(h+sh)/2f),paint)
  val raw=ByteArrayOutputStream();target.compress(Bitmap.CompressFormat.PNG,100,raw);target.recycle()
  val png=raw.toByteArray();val ppm=(dpi/0.0254).toLong()
  val chunkData=ByteArrayOutputStream().apply{write(byteArrayOf(0x70,0x48,0x59,0x73));write(byteArrayOf((ppm shr 24).toByte(),(ppm shr 16).toByte(),(ppm shr 8).toByte(),ppm.toByte(),(ppm shr 24).toByte(),(ppm shr 16).toByte(),(ppm shr 8).toByte(),ppm.toByte(),1))}.toByteArray()
