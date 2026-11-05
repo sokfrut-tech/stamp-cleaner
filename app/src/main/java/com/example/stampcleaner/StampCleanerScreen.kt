@@ -6,6 +6,7 @@ import android.graphics.Color as C
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -95,7 +96,16 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  Surface(shape=RoundedCornerShape(21.dp),color=Color(0xFF20372F)){Column(Modifier.fillMaxWidth().padding(15.dp),verticalArrangement=Arrangement.spacedBy(11.dp)){Row(verticalAlignment=Alignment.CenterVertically){Icon(icon,null,tint=Color(0xFFFFC66D));Spacer(Modifier.width(9.dp));Text(title,color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold,style=MaterialTheme.typography.titleMedium)};content()}}
 }
 @Composable private fun Preview(bitmap:Bitmap,label:String){
- Box(Modifier.fillMaxWidth().heightIn(max=260.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFE6E9E4)),contentAlignment=Alignment.Center){Image(bitmap.asImageBitmap(),label,Modifier.fillMaxWidth().heightIn(max=260.dp),contentScale=ContentScale.Fit)}
+ Box(Modifier.fillMaxWidth().heightIn(max=260.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFF3F4EF)),contentAlignment=Alignment.Center){
+  Canvas(Modifier.matchParentSize()){
+   val cell=18.dp.toPx();val light=Color(0xFFF3F4EF);val dark=Color(0xFFD8DDD5)
+   val cols=(size.width/cell).toInt()+1;val rows=(size.height/cell).toInt()+1
+   for(y in 0 until rows)for(x in 0 until cols){
+    drawRect(if((x+y)%2==0)light else dark,topLeft=androidx.compose.ui.geometry.Offset(x*cell,y*cell),size=androidx.compose.ui.geometry.Size(cell,cell))
+   }
+  }
+  Image(bitmap.asImageBitmap(),label,Modifier.fillMaxWidth().heightIn(max=260.dp),contentScale=ContentScale.Fit)
+ }
 }
 private fun clean(b:Bitmap,t:Int,color:Int?):Bitmap {
  val w=b.width;val h=b.height;val pixels=IntArray(w*h);b.getPixels(pixels,0,w,0,0,w,h)
