@@ -35,3 +35,13 @@ Create an adult, sensual, deliberately veiled club aesthetic for a stamp/signatu
 
 ## Asset note
 The user has not supplied the reference dance video or an authorized portrait. Until supplied, use only original abstract CSS artwork and allow local selection of the user's own media.
+
+
+## App icon requirement — Neon Club / Cyber Glam
+- Create a distinctive, sensual, premium adult-club app icon, not a generic cleaning-tool icon.
+- Visual direction: elegant feminine silhouette in a confident dance pose, dramatic hip-line/shoulder contour, glossy neon magenta and violet rim lighting, dark plum/black background, subtle glass or chrome accents.
+- Keep it tasteful and non-explicit: fully clothed/stagewear silhouette, no visible genitals, no explicit nudity or sexual act. The icon should suggest nightlife and sensuality through pose, lighting and composition rather than explicit anatomy.
+- Icon must remain recognizable at small Android launcher sizes: one clear central silhouette, strong contrast, no tiny text, no fine details.
+- Deliver adaptive icon foreground/background assets and a legacy launcher icon; test round and square masks.
+- Do not use Aeysa's likeness or any real performer's portrait unless the user supplies an image and confirms rights/permission. Until then, create original artwork.
+- Add icon preview to the design QA checklist and verify it is the actual installed APK launcher icon, not just an in-app logo.
