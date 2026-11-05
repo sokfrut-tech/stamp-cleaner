@@ -24,6 +24,13 @@ A separate source review found a conflicting Compose import name (`androidx.comp
 - After the workflow/source fixes, the GitHub connector did not yet return a PR workflow run for the new commit. Do not mark the APK build as passed until a fresh Actions run completes and the APK artifact exists.
 - No independent HIVE/Claude/Gemini review has been received. Do not claim an agent reviewed the code without a substantive review artifact.
 
+## Independent review requests
+On 2026-11-05, independent review requests were written to the Universal-AI-Factory inboxes:
+- `coordination/claude/inbox/2026-11-05_stampcleaner-pr1-review.md`
+- `coordination/gemini/inbox/2026-11-05_stampcleaner-pr1-review.md`
+
+These are sent requests only. No substantive Claude or Gemini review response has been received yet; the channels are not considered verified until an agent writes a matching report to its own outbox.
+
 ## Required next steps
 1. Confirm a fresh workflow run starts on the latest PR head.
 2. If it fails, inspect the failing job logs and fix the first real error; rerun until `assembleDebug` succeeds.
