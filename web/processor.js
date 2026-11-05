@@ -16,7 +16,7 @@
   for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){
    const i=(y*w+x)*4;if(data[i+3]<200)continue;
    const p=paper(x,y),dr=p[0]-data[i],dg=p[1]-data[i+1],db=p[2]-data[i+2],d=Math.hypot(dr,dg,db);
-   if(d>threshold+24)candidates.push({d,r:data[i],g:data[i+1],b:data[i+2]});
+   if(d>Math.max(8,threshold*1.2))candidates.push({d,r:data[i],g:data[i+1],b:data[i+2]});
   }
   if(!candidates.length)return[20,45,130];
   candidates.sort((a,b)=>b.d-a.d);
@@ -31,10 +31,10 @@
   const detected=estimateInk(data,w,h,paper,limit),ink=inkRgb||detected;
   const samples=[];
   for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){const i=(y*w+x)*4;if(data[i+3]<200)continue;const p=paper(x,y),v=[p[0]-ink[0],p[1]-ink[1],p[2]-ink[2]],norm=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];if(norm<400)continue;const delta=[p[0]-data[i],p[1]-data[i+1],p[2]-data[i+2]],projection=(delta[0]*v[0]+delta[1]*v[1]+delta[2]*v[2])/Math.sqrt(norm);if(projection>limit+12)samples.push(projection);}
-  samples.sort((a,b)=>a-b);const inkDistance=samples.length?samples[Math.floor(samples.length*.9)]:Math.hypot(ink[0]-128,ink[1]-128,ink[2]-128);
+  samples.sort((a,b)=>a-b);const inkDistance=samples.length?samples[Math.floor(samples.length*.9)]:Math.hypot(detected[0]-128,detected[1]-128,detected[2]-128);
   const cutoff=Math.min(.8,limit/Math.max(1,inkDistance)),denom=Math.max(.05,1-cutoff);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-   const i=(y*w+x)*4,p=paper(x,y),v=[p[0]-ink[0],p[1]-ink[1],p[2]-ink[2]],norm=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
+   const i=(y*w+x)*4,p=paper(x,y),v=[p[0]-detected[0],p[1]-detected[1],p[2]-detected[2]],norm=v[0]*v[0]+v[1]*v[1]+v[2]*v[2];
    if(norm<400){data[i+3]=0;continue;}
    const delta=[p[0]-data[i],p[1]-data[i+1],p[2]-data[i+2]];
    const raw=(delta[0]*v[0]+delta[1]*v[1]+delta[2]*v[2])/norm;
