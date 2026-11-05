@@ -143,3 +143,14 @@ The current main branch uses a simple global luminance threshold in Android and 
 - The mode-specific values are presets over the current shared adaptive extraction algorithm, not three separate extraction engines. This limitation must remain visible until image-corpus testing proves mode-specific processing quality.
 - Physical-size controls, DPI-aware PNG metadata, EXIF orientation, manual crop, undo, and automated image-quality fixtures remain pending.
 - Latest CI run at this update: run #67 (42067953280); JavaScript syntax step passed, Android compile/build was still running. Do not treat this as a verified release until the job and artifact complete.
+
+
+## Physical-size export progress — 2026-11-05
+
+- Added editable output width and height in millimetres to Android and web export screens.
+- Added 150, 300 and 600 DPI presets; 300 DPI is the default.
+- Export pixel dimensions are calculated as `mm × DPI / 25.4` and bounded to 40 million pixels / 5–300 mm per side.
+- PNG exports now include the standard `pHYs` chunk (pixels per metre) with the selected DPI.
+- Output content is fitted proportionally inside the requested physical canvas; it is not stretched. Any unused area remains transparent.
+- Important caveat: some document editors or import paths may ignore PNG physical-resolution metadata. Users should verify the displayed size in Word after insertion.
+- CI for web commit `ea325ffd8ddf90c31e8786ddfb4ca253cb07b187` was queued/in progress at the time of this note; Android compile and artifact still require a completed green run. No release claim is made yet.
