@@ -56,7 +56,11 @@ jobs:
           fi
           chmod +x ./gradlew
       - name: Check web JavaScript syntax
-        run: node --check web/app.js
+        run: |
+          node --check web/processor.js
+          node --check web/app.js
+      - name: Run synthetic image processing tests
+        run: node --test web/tests/*.test.js
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
       - name: Upload APK
