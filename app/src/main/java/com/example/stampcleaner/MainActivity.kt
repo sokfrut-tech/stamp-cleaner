@@ -33,9 +33,17 @@ class MainActivity : ComponentActivity() {
                 secondary = Color(0xFFD28BFF), background = Color(0xFF0B0711),
                 surface = Color(0xFF24132E), onSurface = Color(0xFFFFF0FA)
             )) {
-                var bgUri by remember { mutableStateOf<Uri?>(null) }
-                var bgVideo by remember { mutableStateOf(false) }
-                var motion by remember { mutableStateOf(true) }
+                val backgroundPrefs = remember { getSharedPreferences("club_background", MODE_PRIVATE) }
+                var bgUri by remember { mutableStateOf(backgroundPrefs.getString("uri", null)?.let(Uri::parse)) }
+                var bgVideo by remember { mutableStateOf(backgroundPrefs.getBoolean("is_video", false)) }
+                var motion by remember { mutableStateOf(backgroundPrefs.getBoolean("motion", true)) }
+                LaunchedEffect(bgUri, bgVideo, motion) {
+                    backgroundPrefs.edit()
+                        .putString("uri", bgUri?.toString())
+                        .putBoolean("is_video", bgVideo)
+                        .putBoolean("motion", motion)
+                        .apply()
+                }
                 val videoPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) {
                         try { contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: SecurityException) {}
