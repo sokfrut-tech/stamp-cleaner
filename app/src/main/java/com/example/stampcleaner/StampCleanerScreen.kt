@@ -186,7 +186,9 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
 @Composable private fun CropPreview(bitmap:Bitmap,onCrop:(Bitmap)->Unit){
  var start by remember(bitmap){mutableStateOf<Offset?>(null)}
  var end by remember(bitmap){mutableStateOf<Offset?>(null)}
- var selection by remember(bitmap){mutableStateOf<Rect?>(null)}\n var canvasWidth by remember{mutableFloatStateOf(0f)}\n val canvasHeightPx=with(LocalDensity.current){230.dp.toPx()}
+ var selection by remember(bitmap){mutableStateOf<Rect?>(null)}
+ var canvasWidth by remember{mutableFloatStateOf(0f)}
+ val canvasHeightPx=with(LocalDensity.current){230.dp.toPx()}
  Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
   Text("Ручная обрезка",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
   Text("Проведите пальцем по изображению, чтобы выделить нужную область.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
