@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
                 }
                 val videoPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) {
-                        try { contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: SecurityException) {}
+                        try { contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: SecurityException) {} catch (_: IllegalArgumentException) {}
                         bgUri = uri; bgVideo = true; motion = true
                     }
                 }
@@ -67,9 +67,11 @@ class MainActivity : ComponentActivity() {
                                     scaleType = ImageView.ScaleType.CENTER_CROP
                                     isClickable = false
                                     isFocusable = false
-                                    setImageURI(bgUri)
+                                    try { setImageURI(bgUri) } catch (_: SecurityException) { setBackgroundColor(android.graphics.Color.rgb(24, 11, 32)) } catch (_: IllegalArgumentException) { setBackgroundColor(android.graphics.Color.rgb(24, 11, 32)) }
                                 } },
-                                update = { it.setImageURI(bgUri) }
+                                update = { image ->
+                                    try { image.setImageURI(bgUri) } catch (_: SecurityException) { image.setImageDrawable(null); image.setBackgroundColor(android.graphics.Color.rgb(24, 11, 32)) } catch (_: IllegalArgumentException) { image.setImageDrawable(null); image.setBackgroundColor(android.graphics.Color.rgb(24, 11, 32)) }
+                                }
                             )
                         }
                     } else {
