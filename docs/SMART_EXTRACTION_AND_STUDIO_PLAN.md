@@ -172,3 +172,12 @@ The current main branch uses a simple global luminance threshold in Android and 
 - Known limitation: Android currently exposes one resize corner rather than all four; its crop preview mapping needs device validation for letterboxed images. Web corner handles and pointer capture also require mobile-browser QA.
 - Latest code commit: `b3a0fe4fc323f0c9521395bb54ca4d51f931b8ed`. The GitHub Actions wrapper did not return a run for this push, and the combined commit status is empty; therefore this revision is not yet CI-verified.
 - Do not merge PR #2 until a fresh workflow run confirms JS syntax and Android compilation, then verify crop gestures on a physical phone.
+
+
+## Synthetic extraction tests and CI — 2026-11-05
+
+- Extracted the web image-processing algorithm into `web/processor.js`, shared by the browser and Node test runner. The browser UI now calls the same tested `StampProcessor.processImageData` function.
+- Added `web/tests/processor.test.js` with synthetic white, cream and gray paper fixtures; checks that background corners become transparent and a blue ink stroke remains; verifies recoloring preserves alpha; checks automatic transparent crop bounds; and checks empty/malformed input handling.
+- Updated `.github/workflows/build-apk.yml` to syntax-check both JavaScript files and run `node --test web/tests/*.test.js` before Android compilation.
+- These tests characterize the current adaptive heuristic, not a proof of perfect extraction for arbitrary photos. Dense stamps, strong gradients, shadows and very faint ink still require broader fixtures and real-device validation.
+- Await a fresh CI run for this revision before treating the tests or Android build as passing.
