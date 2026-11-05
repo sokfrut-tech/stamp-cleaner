@@ -187,17 +187,20 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
  var start by remember(bitmap){mutableStateOf<Offset?>(null)}
  var end by remember(bitmap){mutableStateOf<Offset?>(null)}
  var selection by remember(bitmap){mutableStateOf<Rect?>(null)}
+ var gestureMode by remember{mutableStateOf("draw")}
+ var gestureStart by remember{mutableStateOf(Offset.Zero)}
+ var initialSelection by remember{mutableStateOf<Rect?>(null)}
  var canvasWidth by remember{mutableFloatStateOf(0f)}
  val canvasHeightPx=with(LocalDensity.current){230.dp.toPx()}
  Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
   Text("Ручная обрезка",color=Color(0xFFFFE2B5),fontWeight=FontWeight.Bold)
   Text("Проведите пальцем по изображению, чтобы выделить нужную область.",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
-  Canvas(Modifier.fillMaxWidth().height(230.dp).onSizeChanged{canvasWidth=it.width.toFloat()}.pointerInput(bitmap){detectDragGestures(onDragStart={start=it;end=it;selection=null},onDragEnd={val a=start;val b=end;if(a!=null&&b!=null)selection=Rect(minOf(a.x,b.x),minOf(a.y,b.y),maxOf(a.x,b.x),maxOf(a.y,b.y))},onDragCancel={start=null;end=null}){change,_->end=change.position;change.consume()}}){
+  Canvas(Modifier.fillMaxWidth().height(230.dp).onSizeChanged{canvasWidth=it.width.toFloat()}.pointerInput(bitmap){detectDragGestures(onDragStart={p->gestureStart=p;initialSelection=selection;val r=selection;gestureMode=when{r==null->"draw";kotlin.math.hypot(p.x-r.right,p.y-r.bottom)<34f->"resize";p.x in r.left..r.right&&p.y in r.top..r.bottom->"move";else->"draw"};if(gestureMode=="draw"){start=p;end=p;selection=null}},onDragEnd={val a=start;val b=end;if(gestureMode=="draw"&&a!=null&&b!=null)selection=Rect(minOf(a.x,b.x),minOf(a.y,b.y),maxOf(a.x,b.x),maxOf(a.y,b.y))},onDragCancel={start=null;end=null}){change,_->val p=change.position;val r=initialSelection;when(gestureMode){"draw"->end=p;"move"->{if(r!=null){val dx=p.x-gestureStart.x;val dy=p.y-gestureStart.y;val w=r.width;val h=r.height;val left=(r.left+dx).coerceIn(0f,size.width-w);val top=(r.top+dy).coerceIn(0f,size.height-h);selection=Rect(left,top,left+w,top+h)}};"resize"->{if(r!=null)selection=Rect(r.left,r.top,p.x.coerceIn(r.left+8,size.width),p.y.coerceIn(r.top+8,size.height))}};change.consume()}}){
    val scale=minOf(size.width/bitmap.width,size.height/bitmap.height);val dw=bitmap.width*scale;val dh=bitmap.height*scale;val ox=(size.width-dw)/2f;val oy=(size.height-dh)/2f
    drawRect(Color(0xFFF3F4EF),size=size)
    drawImage(bitmap.asImageBitmap(),dstOffset=androidx.compose.ui.unit.IntOffset(ox.toInt(),oy.toInt()),dstSize=androidx.compose.ui.unit.IntSize(dw.toInt(),dh.toInt()))
    val r=selection?:if(start!=null&&end!=null)Rect(minOf(start!!.x,end!!.x),minOf(start!!.y,end!!.y),maxOf(start!!.x,end!!.x),maxOf(start!!.y,end!!.y))else null
-   r?.let{drawRect(Color(0xFFFFC66D),topLeft=Offset(it.left,it.top),size=androidx.compose.ui.geometry.Size(it.width,it.height),style=Stroke(3.dp.toPx()))}
+   r?.let{drawRect(Color(0xFFFFC66D),topLeft=Offset(it.left,it.top),size=androidx.compose.ui.geometry.Size(it.width,it.height),style=Stroke(3.dp.toPx()));drawCircle(Color(0xFFFFC66D),radius=7.dp.toPx(),center=Offset(it.right,it.bottom))}
   }
   Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
    Button(enabled=selection!=null&&selection!!.width>8&&selection!!.height>8,onClick={val r=selection?:return@Button;val scale=minOf(canvasWidth/bitmap.width,canvasHeightPx);val viewW=bitmap.width*scale;val viewH=bitmap.height*scale;val ox=(canvasWidth-viewW)/2f;val oy=(canvasHeightPx-viewH)/2f;val l=((r.left-ox)/scale).toInt().coerceIn(0,bitmap.width-1);val t=((r.top-oy)/scale).toInt().coerceIn(0,bitmap.height-1);val rr=((r.right-ox)/scale).toInt().coerceIn(l+1,bitmap.width);val bb=((r.bottom-oy)/scale).toInt().coerceIn(t+1,bitmap.height);onCrop(Bitmap.createBitmap(bitmap,l,t,rr-l,bb-t))}){Text("Обрезать по рамке")}
