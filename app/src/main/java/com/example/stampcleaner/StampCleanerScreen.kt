@@ -18,7 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Image as ImageIcon
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.Tune
@@ -60,9 +60,9 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
     Text("🐿️",style=MaterialTheme.typography.displayMedium)
    }
   }
-  Panel("01  Выберите изображение",Icons.Default.Image){
+  Panel("01  Выберите изображение",Icons.Default.ImageIcon){
    Button(onClick={picker.launch("image/*")},enabled=!busy,modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){
-    Icon(Icons.Default.Image,null);Spacer(Modifier.width(8.dp));Text(if(src==null)"Выбрать фото или скан" else "Выбрать другое фото",fontWeight=FontWeight.Bold)
+    Icon(Icons.Default.ImageIcon,null);Spacer(Modifier.width(8.dp));Text(if(src==null)"Выбрать фото или скан" else "Выбрать другое фото",fontWeight=FontWeight.Bold)
    }
    src?.let{Preview(it,"Исходное изображение")}
   }
