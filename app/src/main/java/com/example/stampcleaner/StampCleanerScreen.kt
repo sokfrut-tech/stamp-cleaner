@@ -41,7 +41,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
 @Composable fun StampCleanerScreen(){
  val ctx=LocalContext.current;val scope=rememberCoroutineScope()
  var src by remember{mutableStateOf<Bitmap?>(null)};var dst by remember{mutableStateOf<Bitmap?>(null)}
- var tol by remember{mutableFloatStateOf(38f)};var ink by remember{mutableStateOf(inks[0])}
+ var tol by remember{mutableFloatStateOf(38f)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
   if(uri!=null){src=null;dst=null;scope.launch{busy=true;try{val decoded=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};src=decoded;status=if(decoded!=null)"Фото загружено." else "Не удалось прочитать изображение."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}}
@@ -70,7 +70,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   }
   Panel("02  Настройте очистку",Icons.Default.Tune){
    Row(verticalAlignment=Alignment.CenterVertically){Text("Чувствительность",Modifier.weight(1f),color=Color(0xFFE8F0EA));Text(tol.toInt().toString(),color=Color(0xFFFFD18A),fontWeight=FontWeight.Bold)}
-   Slider(value=tol,onValueChange={tol=it},valueRange=10f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))
+   Slider(value=tol,onValueChange={tol=it},valueRange=10f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))\n   Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFF79D6C2)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)}}
    Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Palette,null,tint=Color(0xFF8BDCC9));Spacer(Modifier.width(8.dp));Text("Цвет чернил",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold)}
    inks.chunked(3).forEach{line->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){line.forEach{choice->
     val active=choice==ink
@@ -78,7 +78,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
      choice.color?.let{Box(Modifier.size(9.dp).clip(CircleShape).background(Color(it)))};if(choice.color!=null)Spacer(Modifier.width(4.dp));Text(choice.name,style=MaterialTheme.typography.labelSmall)
     }
    };repeat(3-line.size){Spacer(Modifier.weight(1f))}}}
-   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF79D6C2),contentColor=Color(0xFF142720))){
+   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;val crop=trim;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk,crop)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF79D6C2),contentColor=Color(0xFF142720))){
     Icon(Icons.Default.AutoFixHigh,null);Spacer(Modifier.width(8.dp));Text(if(busy)"Обрабатываем…" else "Удалить фон",fontWeight=FontWeight.Bold)
    }
   }
@@ -107,7 +107,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   Image(bitmap.asImageBitmap(),label,Modifier.fillMaxWidth().heightIn(max=260.dp),contentScale=ContentScale.Fit)
  }
 }
-private fun clean(b:Bitmap,t:Int,color:Int?):Bitmap {
+private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
  val w=b.width;val h=b.height;val pixels=IntArray(w*h);b.getPixels(pixels,0,w,0,0,w,h)
  val tile=24;val gw=(w+tile-1)/tile;val gh=(h+tile-1)/tile
  val br=IntArray(gw*gh);val bg=IntArray(gw*gh);val bb=IntArray(gw*gh)
@@ -133,7 +133,13 @@ private fun clean(b:Bitmap,t:Int,color:Int?):Bitmap {
   val alpha=(((distance-threshold)/(441.7f-threshold))*255f).toInt().coerceIn(0,255)*C.alpha(c)/255
   pixels[i]=if(alpha<4)C.TRANSPARENT else if(color==null)C.argb(alpha,C.red(c),C.green(c),C.blue(c))else C.argb(alpha,C.red(color),C.green(color),C.blue(color))
  }
- return Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
+ val output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
+ if(!trim)return output
+ var left=w;var top=h;var right=-1;var bottom=-1
+ for(y in 0 until h)for(x in 0 until w)if(C.alpha(pixels[y*w+x])>8){if(x<left)left=x;if(x>right)right=x;if(y<top)top=y;if(y>bottom)bottom=y}
+ if(right<left||bottom<top)return output
+ val pad=maxOf(3,minOf(w,h)/100);left=(left-pad).coerceAtLeast(0);top=(top-pad).coerceAtLeast(0);right=(right+pad).coerceAtMost(w-1);bottom=(bottom+pad).coerceAtMost(h-1)
+ val cropped=Bitmap.createBitmap(output,left,top,right-left+1,bottom-top+1);if(cropped!==output)output.recycle();return cropped
 }
 
 private fun decodeScaled(context:android.content.Context,uri:android.net.Uri):Bitmap?{
