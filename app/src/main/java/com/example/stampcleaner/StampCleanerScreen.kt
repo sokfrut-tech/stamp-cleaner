@@ -1,11 +1,8 @@
 package com.example.stampcleaner
 
-import android.content.ContentValues
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color as C
-import android.os.Build
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,6 +45,10 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
   if(uri!=null)scope.launch{busy=true;try{src=withContext(Dispatchers.IO){ctx.contentResolver.openInputStream(uri)?.use{BitmapFactory.decodeStream(it)}};dst=null;status="Фото загружено."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}
  }
+ val savePng=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")){uri->
+  val bitmap=dst
+  if(uri!=null&&bitmap!=null)scope.launch{busy=true;try{val ok=withContext(Dispatchers.IO){ctx.contentResolver.openOutputStream(uri)?.use{bitmap.compress(Bitmap.CompressFormat.PNG,100,it)}?:false};Toast.makeText(ctx,if(ok)"PNG сохранён." else "Не удалось сохранить PNG.",Toast.LENGTH_LONG).show()}catch(e:Exception){Toast.makeText(ctx,"Ошибка сохранения PNG.",Toast.LENGTH_LONG).show()}finally{busy=false}}
+ }
  Column(Modifier.fillMaxSize().background(Color(0xFF142720)).verticalScroll(rememberScrollState()).padding(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)){
   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
    Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFF315747)),contentAlignment=Alignment.Center){Text("🌰",style=MaterialTheme.typography.headlineMedium)}
@@ -83,7 +84,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   Panel("03  Прозрачный результат",Icons.Default.SaveAlt){
    if(dst==null)Text("Здесь появится ваша печать или подпись.",color=Color(0xFFB6CBBF)) else{
     Preview(dst!!,"PNG без фона")
-    Button(onClick={val b=dst?:return@Button;try{val v=ContentValues().apply{put(MediaStore.Images.Media.DISPLAY_NAME,"stamp-cleaner-${System.currentTimeMillis()}.png");put(MediaStore.Images.Media.MIME_TYPE,"image/png");if(Build.VERSION.SDK_INT>=29)put(MediaStore.Images.Media.RELATIVE_PATH,"Pictures/StampCleaner")};val u=ctx.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,v);val ok=u?.let{ctx.contentResolver.openOutputStream(it)?.use{s->b.compress(Bitmap.CompressFormat.PNG,100,s)}}?:false;Toast.makeText(ctx,if(ok)"PNG сохранён в Pictures/StampCleaner" else "Ошибка сохранения",Toast.LENGTH_LONG).show()}catch(e:Exception){Toast.makeText(ctx,"Ошибка сохранения",Toast.LENGTH_LONG).show()}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
+    Button(enabled=!busy,onClick={savePng.launch("stamp-cleaner-${System.currentTimeMillis()}.png")},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFFFC66D),contentColor=Color(0xFF2A2118))){Icon(Icons.Default.SaveAlt,null);Spacer(Modifier.width(8.dp));Text("Сохранить PNG",fontWeight=FontWeight.Bold)}
    }
   }
   Text(status,color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)
