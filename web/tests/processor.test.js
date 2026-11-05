@@ -52,7 +52,7 @@ test('antialiased blue ink edges are decontaminated instead of retaining paper-c
   }
  }
  const out=processImageData(d,w,h,8,null,false);
- const edge=(48*w+30)*4,edgeAlpha=out.data[edge+3];
+ const edge=(47*w+30)*4,edgeAlpha=out.data[edge+3];
  assert.ok(edgeAlpha>80&&edgeAlpha<255,'antialiased edge should remain partially transparent');
  assert.ok(Math.abs(out.data[edge]-ink[0])<25&&Math.abs(out.data[edge+1]-ink[1])<25&&Math.abs(out.data[edge+2]-ink[2])<25,'edge RGB should be decontaminated toward ink, not paper');
  assert.equal(out.data[3],0,'paper remains transparent');
