@@ -7,11 +7,13 @@ tol.addEventListener('input',()=>value.textContent=tol.value);
 inkButtons.forEach(btn=>btn.addEventListener('click',()=>{inkButtons.forEach(b=>b.classList.remove('active'));btn.classList.add('active');selected=btn.dataset.color;}));
 file.addEventListener('change',()=>{
  const f=file.files&&file.files[0];if(!f)return;
+ go.disabled=true;save.disabled=true;image=null;original.style.display='none';result.style.display='none';
+ $('#empty-source').style.display='block';$('#empty-result').style.display='block';
  if(!f.type.startsWith('image/')){status.textContent='Выберите файл изображения.';return;}
  if(objectUrl)URL.revokeObjectURL(objectUrl);
  objectUrl=URL.createObjectURL(f);image=new Image();
  image.onload=()=>{
-  const maxPixels=24000000,scale=Math.min(1,Math.sqrt(maxPixels/(image.naturalWidth*image.naturalHeight)));
+  const maxPixels=6250000,scale=Math.min(1,Math.sqrt(maxPixels/(image.naturalWidth*image.naturalHeight)));
   const w=Math.max(1,Math.round(image.naturalWidth*scale)),h=Math.max(1,Math.round(image.naturalHeight*scale));
   original.width=result.width=w;original.height=result.height=h;
   octx.clearRect(0,0,w,h);octx.drawImage(image,0,0,w,h);ctx.clearRect(0,0,w,h);
