@@ -1,1 +1,50 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>StampCleaner — PNG</title><link rel="stylesheet" href="style.css"></head><body><main><h1>StampCleaner</h1><p>Удаление фона печатей и подписей · прозрачный PNG</p><section><h2>1. Выберите фото</h2><input id="file" type="file" accept="image/*"></section><section><h2>2. Настройки</h2><label>Чувствительность <b id="v">38</b></label><input id="tol" type="range" min="10" max="110" value="38"><label>Цвет чернил</label><select id="ink"><option value="original">Оригинал</option><option value="#1441be">Синий</option><option value="#000000">Чёрный</option><option value="#7023a0">Фиолетовый</option><option value="#be2323">Красный</option><option value="#147841">Зелёный</option></select><button id="go" disabled>Удалить фон</button></section><section><h2>3. Результат</h2><canvas id="canvas"></canvas><button id="save" disabled>Скачать PNG</button><p id="status">Изображение обрабатывается в браузере и не отправляется на сервер.</p></section></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#18382f"><meta name="description" content="Удаление фона печатей и подписей. Экспорт прозрачного PNG прямо в браузере.">
+<title>StampCleaner — лесная мастерская PNG</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="#"><img src="favicon.svg" alt=""><span><b>StampCleaner</b><small>Лесная мастерская PNG</small></span></a><span class="privacy">🔒 Обработка на устройстве</span></header>
+<main>
+<section class="hero">
+ <div class="hero-copy"><span class="eyebrow">МАСТЕРСКАЯ СПАСАТЕЛЕЙ ЧЕРНИЛ</span><h1>Спасаем важные <em>чернила!</em></h1>
+ <p>Убираем бумагу, оставляем печать и подпись — аккуратно, на прозрачном фоне.</p>
+ <a href="#workspace" class="jump">Начать очистку <span>↓</span></a></div>
+ <img class="mascot" src="mascot.svg" alt="Оригинальный лесной помощник с лупой">
+ <div class="leaf leaf-one"></div><div class="leaf leaf-two"></div>
+</section>
+<div class="workspace" id="workspace">
+ <section class="panel">
+  <div class="step-title"><span class="step">01</span><div><h2>Выберите изображение</h2><p>Фото, скан или картинка с телефона</p></div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 15l3-3 2 2 2-3 4 5M9 9h.01"/></svg></div>
+  <label class="file-drop" for="file"><span class="upload-icon">＋</span><b>Нажмите, чтобы выбрать фото</b><small>PNG, JPG или WEBP</small><input id="file" type="file" accept="image/*"></label>
+  <div id="source-info" class="hint">Изображение остаётся на вашем устройстве.</div>
+ </section>
+ <section class="panel">
+  <div class="step-title"><span class="step">02</span><div><h2>Настройте очистку</h2><p>Подберите результат под свои чернила</p></div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M7 4v6M4 17h16m-5-3v6"/></svg></div>
+  <div class="control-label"><label for="tol">Чувствительность</label><b id="v">38</b></div><input id="tol" type="range" min="10" max="110" value="38">
+  <div class="control-label"><span>Цвет чернил</span></div>
+  <div class="swatches" id="swatches">
+   <button class="swatch active" data-color="original"><i class="dot original"></i>Оригинал</button>
+   <button class="swatch" data-color="#1b4cbe"><i class="dot blue"></i>Синий</button>
+   <button class="swatch" data-color="#171717"><i class="dot black"></i>Чёрный</button>
+   <button class="swatch" data-color="#7023a0"><i class="dot purple"></i>Фиолетовый</button>
+   <button class="swatch" data-color="#be2323"><i class="dot red"></i>Красный</button>
+   <button class="swatch" data-color="#147841"><i class="dot green"></i>Зелёный</button>
+  </div>
+  <button id="go" class="primary" disabled><span>✦</span> Удалить фон</button>
+ </section>
+ <section class="panel result-panel">
+  <div class="step-title"><span class="step">03</span><div><h2>Прозрачный результат</h2><p>Проверьте линии и скачайте PNG</p></div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16"/></svg></div>
+  <div class="previews"><div class="preview"><b>Исходник</b><div class="preview-stage"><canvas id="original"></canvas><span id="empty-source">Фото ещё не выбрано</span></div></div>
+  <div class="preview"><b>После очистки</b><div class="preview-stage checker"><canvas id="canvas"></canvas><span id="empty-result">Здесь появится PNG</span></div></div></div>
+  <button id="save" class="download" disabled>↓ Скачать прозрачный PNG</button>
+  <p id="status" class="status" aria-live="polite">Выберите изображение, чтобы начать. Обработка выполняется локально.</p>
+ </section>
+</div>
+<footer><span>StampCleaner · Rescue Edition</span><span>Сделано с заботой о ваших чернилах 🐿️</span></footer>
+</main>
+<script src="app.js"></script>
+</body></html>
