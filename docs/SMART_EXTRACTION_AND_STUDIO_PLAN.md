@@ -163,3 +163,12 @@ The current main branch uses a simple global luminance threshold in Android and 
 - The current manual crop interaction draws a new rectangle; drag-to-move and corner/edge resize handles are not implemented yet. This is a first usable crop pass, not the final editing experience.
 - Successful workflow run #81 (`42068729226`) completed all steps, including JavaScript syntax check, Android debug APK build, and artifact upload. That run predates the latest manual-crop commits; the new crop changes still require a fresh green build.
 - The crop mapping and touch behavior need device QA on narrow screens, portrait/landscape images, and very small selections. Do not merge PR #2 until the new workflow passes and the manual crop has been exercised.
+
+
+### Manual crop refinement — 2026-11-05
+
+- Web: crop rectangle can now be drawn, moved by dragging inside it, resized from four corner handles, applied, or reset before applying. Touch and mouse use pointer events.
+- Android: crop rectangle can be drawn, moved by dragging inside it, resized from the lower-right corner, applied, or cleared before applying.
+- Known limitation: Android currently exposes one resize corner rather than all four; its crop preview mapping needs device validation for letterboxed images. Web corner handles and pointer capture also require mobile-browser QA.
+- Latest code commit: `b3a0fe4fc323f0c9521395bb54ca4d51f931b8ed`. The GitHub Actions wrapper did not return a run for this push, and the combined commit status is empty; therefore this revision is not yet CI-verified.
+- Do not merge PR #2 until a fresh workflow run confirms JS syntax and Android compilation, then verify crop gestures on a physical phone.
