@@ -41,7 +41,15 @@
    const linearAlpha=Math.max(0,Math.min(1,(raw-cutoff)/denom));
    // Slightly tighten antialiased edges without erasing faint ink.
    const alpha=Math.pow(linearAlpha,1.12);
-   data[i]=ink[0];data[i+1]=ink[1];data[i+2]=ink[2];data[i+3]=alpha<.015?0:Math.round(alpha*255*data[i+3]/255);
+   if(inkRgb){data[i]=ink[0];data[i+1]=ink[1];data[i+2]=ink[2];}
+   else{
+    // "Original" keeps the photographed ink hue instead of flattening every stroke to one median blue.
+    const a=Math.max(.08,alpha);
+    data[i]=Math.max(0,Math.min(255,Math.round(p[0]+(data[i]-p[0])/a)));
+    data[i+1]=Math.max(0,Math.min(255,Math.round(p[1]+(data[i+1]-p[1])/a)));
+    data[i+2]=Math.max(0,Math.min(255,Math.round(p[2]+(data[i+2]-p[2])/a)));
+   }
+   data[i+3]=alpha<.015?0:Math.round(alpha*255);
   }
   if(!trim)return{data,width:w,height:h};
   let left=w,top=h,right=-1,bottom=-1;
