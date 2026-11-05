@@ -165,8 +165,10 @@ private fun exportPng(source:Bitmap,widthMm:Float,heightMm:Float,dpi:Int):ByteAr
  require(widthMm in 5f..300f&&heightMm in 5f..300f){"Размер должен быть от 5 до 300 мм"}
  val w=(widthMm*dpi/25.4f).toInt().coerceAtLeast(1);val h=(heightMm*dpi/25.4f).toInt().coerceAtLeast(1)
  require(w.toLong()*h<=40_000_000L){"Слишком большое изображение"}
- val scaled=Bitmap.createScaledBitmap(source,w,h,true)
- val raw=ByteArrayOutputStream();scaled.compress(Bitmap.CompressFormat.PNG,100,raw);if(scaled!==source)scaled.recycle()
+ val target=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888)
+ val scale=minOf(w.toFloat()/source.width,h.toFloat()/source.height);val sw=source.width*scale;val sh=source.height*scale
+ android.graphics.Canvas(target).drawBitmap(source,null,android.graphics.RectF((w-sw)/2f,(h-sh)/2f,(w+sw)/2f,(h+sh)/2f),android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG))
+ val raw=ByteArrayOutputStream();target.compress(Bitmap.CompressFormat.PNG,100,raw);target.recycle()
  val png=raw.toByteArray();val ppm=(dpi/0.0254).toLong()
  val chunkData=ByteArrayOutputStream().apply{write(byteArrayOf(0x70,0x48,0x59,0x73));write(byteArrayOf((ppm shr 24).toByte(),(ppm shr 16).toByte(),(ppm shr 8).toByte(),ppm.toByte(),(ppm shr 24).toByte(),(ppm shr 16).toByte(),(ppm shr 8).toByte(),ppm.toByte(),1))}.toByteArray()
  val crc=CRC32().apply{update(chunkData)}.value
