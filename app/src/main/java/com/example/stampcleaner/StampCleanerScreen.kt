@@ -35,7 +35,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private enum class ContentMode(val title:String,val hint:String){SIGNATURE("Подпись","Сохраняем тонкие рукописные линии"),STAMP("Печать","Сохраняем контур и детали оттиска"),TEXT("Текстовый штамп","Сохраняем мелкие буквы и цифры")}\nprivate data class Ink(val name:String,val color:Int?)
+private enum class ContentMode(val title:String,val hint:String){SIGNATURE("Подпись","Сохраняем тонкие рукописные линии"),STAMP("Печать","Сохраняем контур и детали оттиска"),TEXT("Текстовый штамп","Сохраняем мелкие буквы и цифры")}
+private data class Ink(val name:String,val color:Int?)
 private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),Ink("Чёрный",C.BLACK),Ink("Фиолетовый",0xFF7023A0.toInt()),Ink("Красный",C.RED),Ink("Зелёный",0xFF147841.toInt()))
 
 @Composable fun StampCleanerScreen(){
@@ -70,7 +71,8 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   }
   Panel("02  Настройте очистку",Icons.Default.Tune){
    Row(verticalAlignment=Alignment.CenterVertically){Text("Чувствительность",Modifier.weight(1f),color=Color(0xFFE8F0EA));Text(tol.toInt().toString(),color=Color(0xFFFFD18A),fontWeight=FontWeight.Bold)}
-   Slider(value=tol,onValueChange={tol=it},valueRange=10f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))\n   Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFF79D6C2)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)}}
+   Slider(value=tol,onValueChange={tol=it},valueRange=10f..110f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFFC66D),activeTrackColor=Color(0xFF79D6C2)))
+   Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFF79D6C2)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFB6CBBF),style=MaterialTheme.typography.bodySmall)}}
    Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Palette,null,tint=Color(0xFF8BDCC9));Spacer(Modifier.width(8.dp));Text("Цвет чернил",color=Color(0xFFE8F0EA),fontWeight=FontWeight.SemiBold)}
    inks.chunked(3).forEach{line->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){line.forEach{choice->
     val active=choice==ink
