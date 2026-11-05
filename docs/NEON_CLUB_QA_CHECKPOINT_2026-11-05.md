@@ -43,3 +43,11 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 
 - Additional guard: if the video preparation callback fires while the Activity is already stopped, it no longer starts playback in the background; playback waits for the lifecycle resume event. Commit: `5e598a836fac5f7c78521b786a8f8be2024e0569`.
 - CI runner status note: runs `42091131768`, `42091140463`, `42091145477`, `42091171173`, `42091187047`, and `42091248568` reached post-job cleanup but GitHub still reported `in_progress` with no conclusion/artifact at the latest inspection. Treat the current source as not yet build-verified.
+
+
+## CI follow-up — 2026-11-05
+- Confirmed completed success for Android runs `42091140463`, `42091145477`, `42091171173`, `42091187047`, `42091248568`, `42091505778`, and `42091518642`.
+- Run `42091518642` built the current player-source commit `5e598a836fac5f7c78521b786a8f8be2024e0569`; artifact `StampCleaner-Android-APK`, ID `13445232878`, size `15,160,373` bytes, available and not expired.
+- Run `42091565324` for documentation checkpoint commit `cdf866c9570abb9d1018a0f3b6405cf94841dba3` was still `in_progress` at latest inspection. The Android source itself is covered by the successful `42091518642` run.
+- Resource tree currently contains the adaptive launcher icon XML at `mipmap-anydpi-v26/ic_launcher.xml` and foreground vector; manifest references it for both `icon` and `roundIcon`. Since `minSdk=26`, no pre-26 legacy icon density assets are required. Visual launcher-mask appearance still needs device inspection.
+- No physical-device/emulator interaction test has been performed; CI build success does not prove touch layering, actual playback lifecycle behavior, or image-processing quality.
