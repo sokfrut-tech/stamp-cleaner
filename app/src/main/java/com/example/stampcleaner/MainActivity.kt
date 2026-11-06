@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 }
                 val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) {
-                        try { contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: SecurityException) {}
+                        try { contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: SecurityException) {} catch (_: IllegalArgumentException) {}
                         bgUri = uri; bgVideo = false; motion = true
                     }
                 }
