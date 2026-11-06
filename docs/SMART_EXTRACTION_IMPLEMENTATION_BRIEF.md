@@ -73,3 +73,9 @@ The current preview of a blue signature still shows grey/white paper texture. A 
 - Implementation commit: `048de6a6c8f84b9f56ceeed946ff9220c2a93731`.
 - Limit: overlapping text/lines printed in the same colour as the stamp cannot be reliably separated by colour alone. Keep this option off by default; compare results and warn users about same-colour overlaps.
 - Validation required: Android build + supplied blue stamp fixture; inspect the outer-ring microtext, small stars, and inner circle. This is an experimental opt-in filter, not yet accepted as production quality.
+
+
+### CI repair and verified build — 2026-11-06
+- Initial implementation commit `ae6bfd7` failed Kotlin compilation because a literal `\\n` sequence was inserted between Compose rows. Corrected it to a real source newline in commit `15ec2d36b3a2943af2ed33f8266b8c1da93ec2f0`.
+- GitHub Actions run `42202162260` completed successfully; artifact `StampCleaner-Android-APK` id `13494522767`, SHA-256 `e7c4b05c672e30dd085a983f814ef0451983fb917ff0ea49786e55f045fc4d8c`.
+- This proves compilation and CI tests only. Real-device extraction quality, same-colour overlap behavior, and Word PNG rendering still require device validation.
