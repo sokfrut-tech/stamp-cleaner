@@ -28,9 +28,16 @@ import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -53,7 +60,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  var src by remember{mutableStateOf<Bitmap?>(null)};var dst by remember{mutableStateOf<Bitmap?>(null)}
  var widthMm by remember{mutableStateOf("40")};var heightMm by remember{mutableStateOf("40")};var dpi by remember{mutableIntStateOf(300)}
  var tol by remember{mutableFloatStateOf(12f)};var blueHueTolerance by remember{mutableFloatStateOf(40f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)};var inkOnly by remember{mutableStateOf(false)};var blueHsvOnly by remember{mutableStateOf(false)}
- var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
+ var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)};var showPerformer by remember{mutableStateOf(true)};var reducePerformerMotion by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
   if(uri!=null){src=null;dst=null;scope.launch{busy=true;try{val decoded=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};src=decoded;status=if(decoded!=null)"Фото загружено." else "Не удалось прочитать изображение."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}}
  }
@@ -66,6 +73,16 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
    Box(Modifier.size(52.dp).clip(CircleShape).background(Color(0xFF52235D)),contentAlignment=Alignment.Center){Text("✦",style=MaterialTheme.typography.headlineMedium)}
    Column(Modifier.weight(1f)){Text("StampCleaner",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.ExtraBold,color=Color(0xFFFFB5E8));Text("NEON CLUB · STAMP STUDIO",color=Color(0xFFD2B6D4))}
    Text("1.1",color=Color(0xFF9FE3D1))
+   if(showPerformer){
+    val motion= rememberInfiniteTransition(label="performer-motion")
+    val sway by motion.animateFloat(initialValue=-4f,targetValue=4f,animationSpec=infiniteRepeatable(tween(if(reducePerformerMotion) 1 else 850),repeatMode=RepeatMode.Reverse),label="performer-sway")
+    val bob by motion.animateFloat(initialValue=0f,targetValue=if(reducePerformerMotion) 0f else 4f,animationSpec=infiniteRepeatable(tween(if(reducePerformerMotion) 1 else 650),repeatMode=RepeatMode.Reverse),label="performer-bob")
+    Image(painterResource(R.drawable.neon_performer),"Неоновая танцовщица",Modifier.size(88.dp).clip(RoundedCornerShape(16.dp)).graphicsLayer{rotationZ=if(reducePerformerMotion)0f else sway;translationY=bob;scaleX=if(reducePerformerMotion)1f else 1f+ bob/160f;scaleY=if(reducePerformerMotion)1f else 1f-bob/160f},contentScale=ContentScale.Crop)
+   }
+  }
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){
+   Row(Modifier.weight(1f),verticalAlignment=Alignment.CenterVertically){Checkbox(checked=showPerformer,onCheckedChange={showPerformer=it});Text("Танцовщица",color=Color(0xFFFFD7F2),style=MaterialTheme.typography.bodySmall)}
+   Row(Modifier.weight(1f),verticalAlignment=Alignment.CenterVertically){Checkbox(checked=reducePerformerMotion,onCheckedChange={reducePerformerMotion=it},enabled=showPerformer);Text("Меньше движения",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)}
   }
   Surface(shape=RoundedCornerShape(22.dp),color=Color(0xFF32183D)){
    Row(Modifier.fillMaxWidth().padding(17.dp),verticalAlignment=Alignment.CenterVertically){
