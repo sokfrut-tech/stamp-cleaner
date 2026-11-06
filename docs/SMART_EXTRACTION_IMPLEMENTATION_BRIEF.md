@@ -66,3 +66,10 @@ The current preview of a blue signature still shows grey/white paper texture. A 
 5. Add crop and mm/DPI geometry.
 6. Port parity tests to web.
 7. Add constructor only after extraction passes the quality gate.
+
+
+## P0 implementation update — 2026-11-06
+- Android UI now exposes an opt-in `Только цвет чернил` toggle. It applies a soft RGB-distance mask against the selected/detected ink colour after paper-removal alpha estimation, suppressing unrelated grey/black form text while preserving a soft edge transition.
+- Implementation commit: `048de6a6c8f84b9f56ceeed946ff9220c2a93731`.
+- Limit: overlapping text/lines printed in the same colour as the stamp cannot be reliably separated by colour alone. Keep this option off by default; compare results and warn users about same-colour overlaps.
+- Validation required: Android build + supplied blue stamp fixture; inspect the outer-ring microtext, small stars, and inner circle. This is an experimental opt-in filter, not yet accepted as production quality.
