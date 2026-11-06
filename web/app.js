@@ -69,3 +69,29 @@ function crc32(bytes){let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(
 function addPhysChunk(pngBytes,dpi){const ppm=Math.round(dpi/0.0254),type=new TextEncoder().encode('pHYs'),data=new Uint8Array(9),view=new DataView(data.buffer);view.setUint32(0,ppm);view.setUint32(4,ppm);data[8]=1;const crcInput=new Uint8Array(13);crcInput.set(type);crcInput.set(data,4);const chunk=new Uint8Array(21),cv=new DataView(chunk.buffer);cv.setUint32(0,9);chunk.set(type,4);chunk.set(data,8);cv.setUint32(17,crc32(crcInput));const out=new Uint8Array(pngBytes.length+chunk.length);out.set(pngBytes.subarray(0,33),0);out.set(chunk,33);out.set(pngBytes.subarray(33),54);return out;}
 save.addEventListener('click',async()=>{if(!result.width||!result.height)return;const widthMm=Number($('#width-mm').value),heightMm=Number($('#height-mm').value),dpi=Number($('#dpi').value);if(!(widthMm>=5&&widthMm<=300&&heightMm>=5&&heightMm<=300)){status.textContent='Укажите ширину и высоту от 5 до 300 мм.';return;}const targetW=Math.max(1,Math.round(widthMm*dpi/25.4)),targetH=Math.max(1,Math.round(heightMm*dpi/25.4));if(targetW*targetH>40000000){status.textContent='Слишком большой размер экспорта. Уменьшите миллиметры или DPI.';return;}save.disabled=true;status.textContent='Подготавливаем PNG с заданным физическим размером…';try{const scaled=document.createElement('canvas');scaled.width=targetW;scaled.height=targetH;const sctx=scaled.getContext('2d'),factor=Math.min(1,targetW/result.width,targetH/result.height),drawW=result.width*factor,drawH=result.height*factor;sctx.drawImage(result,(targetW-drawW)/2,(targetH-drawH)/2,drawW,drawH);const blob=await new Promise(resolve=>scaled.toBlob(resolve,'image/png'));if(!blob)throw new Error('PNG encode failed');const bytes=new Uint8Array(await blob.arrayBuffer()),tagged=addPhysChunk(bytes,dpi),outBlob=new Blob([tagged],{type:'image/png'}),url=URL.createObjectURL(outBlob),a=document.createElement('a');a.href=url;a.download='stamp-cleaner.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);status.textContent='PNG сохранён: '+targetW+' × '+targetH+' px, '+widthMm+' × '+heightMm+' мм при '+dpi+' DPI.';}catch(err){status.textContent='Не удалось создать PNG с заданным размером.';}finally{save.disabled=false;} });
 window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl);});
+
+
+// Optional local-only Neon Club background. No upload or network request is made.
+(()=>{
+ const input=document.getElementById('club-background-file');
+ const video=document.getElementById('club-video');
+ const motion=document.getElementById('club-motion');
+ const reset=document.getElementById('club-background-reset');
+ const backdrop=document.querySelector('.club-backdrop');
+ if(!input||!video||!motion||!reset||!backdrop)return;
+ let activeUrl=null;
+ const clear=()=>{video.pause();video.removeAttribute('src');video.load();backdrop.style.backgroundImage='';if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl=null;}};
+ input.addEventListener('change',()=>{
+  const file=input.files&&input.files[0];if(!file)return;
+  if(!file.type.startsWith('video/')&&!file.type.startsWith('image/')){status.textContent='Выберите видео или изображение.';input.value='';return;}
+  clear();activeUrl=URL.createObjectURL(file);
+  if(file.type.startsWith('video/')){video.src=activeUrl;video.style.display='block';video.play().catch(()=>{status.textContent='Нажмите на переключатель фона, чтобы запустить видео.';});}
+  else{video.style.display='none';backdrop.style.backgroundImage='linear-gradient(#10081799,#100817bb),url("'+activeUrl+'")';backdrop.style.backgroundSize='cover';backdrop.style.backgroundPosition='center';}
+  status.textContent='Фоновый файл выбран. Он остаётся только на этом устройстве.';
+ });
+ motion.addEventListener('change',()=>{backdrop.style.display=motion.checked?'block':'none';});
+ reset.addEventListener('click',()=>{clear();video.style.display='block';input.value='';motion.checked=true;backdrop.style.display='block';status.textContent='Возвращён встроенный неоновый фон.';});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else if(motion.checked&&video.src)video.play().catch(()=>{});});
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){motion.checked=false;backdrop.style.display='none';}
+ window.addEventListener('pagehide',clear,{once:true});
+})();

@@ -23,3 +23,36 @@ button{font:inherit}.primary,.download{width:100%;margin-top:17px;padding:14px 1
 .crop-selection{touch-action:none}.crop-selection .handle{position:absolute;width:14px;height:14px;border:2px solid #18382f;border-radius:50%;background:#ffd18a;box-shadow:0 1px 5px #0008;pointer-events:none}.crop-selection .nw{left:-7px;top:-7px}.crop-selection .ne{right:-7px;top:-7px}.crop-selection .sw{left:-7px;bottom:-7px}.crop-selection .se{right:-7px;bottom:-7px}
 
 .manual-crop{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.manual-crop p,.manual-crop>small{flex:0 0 100%}.crop-apply,.crop-reset{display:inline-flex;align-items:center;justify-content:center;flex:1 1 140px;width:auto;min-width:0;min-height:44px;margin:0;white-space:nowrap;writing-mode:horizontal-tb;}
+
+
+/* Neon Club / Cyber Glam visual layer. Processing canvas and controls stay crisp. */
+:root{color-scheme:dark;--forest:#190d22;--deep:#0b0711;--panel:#24132e;--panel2:#32183d;--cream:#fff0fa;--muted:#c7a9c9;--gold:#ffb5e8;--mint:#d28bff;--line:#754080}
+html{scroll-behavior:smooth}body{position:relative;isolation:isolate;background:radial-gradient(ellipse at 12% 12%,#69265e88,transparent 38%),radial-gradient(ellipse at 90% 35%,#32208088,transparent 42%),#0b0711;color:var(--cream)}
+.club-backdrop{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 50% 100%,#7c1e7080,transparent 48%),linear-gradient(125deg,#12091c,#090711 60%,#170b22)}
+.club-backdrop video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.34;filter:saturate(1.15) contrast(1.08)}
+.club-glow{position:absolute;inset:-20%;background:radial-gradient(ellipse at 18% 30%,#ff36c433,transparent 30%),radial-gradient(ellipse at 80% 58%,#783bff44,transparent 34%);animation:clubPulse 9s ease-in-out infinite alternate}
+.dancer-silhouette{position:absolute;right:4%;bottom:-7%;width:min(38vw,420px);height:88%;opacity:.19;filter:blur(1.2px);transform-origin:50% 80%;animation:hipSway 3.6s ease-in-out infinite}
+.dancer-silhouette:before{content:"";position:absolute;left:37%;top:4%;width:27%;height:18%;border-radius:50%;background:linear-gradient(135deg,#ffd0ed,#a72cff 70%);box-shadow:0 0 55px #ff38c9}
+.dancer-silhouette:after{content:"";position:absolute;left:23%;top:19%;width:55%;height:43%;border-radius:48% 48% 36% 36%;background:linear-gradient(100deg,#ff9de0,#7a36c9 55%,#f2a6ed);clip-path:polygon(28% 0,72% 0,100% 32%,77% 62%,70% 100%,30% 100%,23% 62%,0 32%)}
+.dancer-silhouette span{position:absolute;left:31%;top:56%;width:42%;height:45%;border-radius:35% 35% 20% 20%;background:linear-gradient(90deg,#7d39c7,#ff8ad6,#7130b6);clip-path:polygon(18% 0,82% 0,100% 30%,78% 100%,22% 100%,0 30%)}
+@keyframes hipSway{0%,100%{transform:rotate(-3deg) translateX(-4px)}50%{transform:rotate(4deg) translateX(5px)}}
+@keyframes clubPulse{from{opacity:.55;transform:scale(1)}to{opacity:1;transform:scale(1.12)}}
+.topbar{position:relative;z-index:2}.brand b{color:#ffc0ed}.brand small{color:#d5b8dd}
+.privacy{background:#32173d;border-color:#8b4595;color:#f5c8ef}
+.hero{z-index:1;min-height:300px;border-color:#8e4597;background:linear-gradient(110deg,#24102fdc,#34153fd0 56%,#160e2bdc);box-shadow:0 18px 50px #0009,0 0 34px #d52ca522}
+.eyebrow{color:#ff9cde}.hero h1 em{color:#ff9de0}.hero p{color:#f0d9ee}.jump{background:linear-gradient(100deg,#ff9bdc,#d7a0ff);color:#24102c;box-shadow:0 0 22px #f04cc955}
+.workspace{position:relative;z-index:1}.panel{border-color:#713c7b;background:linear-gradient(155deg,#24132eeF,#170f24f2);box-shadow:0 14px 34px #0008,0 0 20px #d42caa0c;backdrop-filter:blur(16px)}
+.step{background:#4a2456;color:#ffc0ed}.step-title p,.hint,.crop-option small,.size-note,.status{color:#d2b6d4}
+.step-title svg{stroke:#e49bff}.file-drop{background:#1a1026;border-color:#a75aa9}.file-drop:hover{background:#2a1635;border-color:#ff9cde}
+.upload-icon{background:#52235d;color:#ffb4e8}.control-label b{color:#ffb4e8}
+.swatch{background:#1a1026;border-color:#754080}.swatch.active{border-color:#ff9de0;background:#48214f;color:#ffc0ed;box-shadow:inset 0 0 0 1px #ff9de055}
+.primary{background:linear-gradient(100deg,#c987ff,#ff9bdc);color:#210d2b}.download{background:linear-gradient(100deg,#ff9bdc,#d8a0ff);color:#210d2b}
+.mode-select,.size-controls input,.size-controls select{background:#1a1026;border-color:#754080;color:var(--cream)}
+.crop-option,.manual-crop{background:#1a1026;border-color:#754080}.manual-crop p{color:#ffc0ed}
+footer{position:relative;z-index:1;color:#b99bc1}
+.backdrop-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.backdrop-pick,.backdrop-tools button{display:inline-flex;align-items:center;min-height:34px;padding:7px 11px;border:1px solid #a45aa9;border-radius:10px;background:#1c1028cc;color:#f8d9f2;font-size:11px;font-weight:700;cursor:pointer}
+.backdrop-pick input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.motion-toggle{display:inline-flex;gap:6px;align-items:center;color:#e6c8e9;font-size:11px}.motion-toggle input{accent-color:#ff9de0}
+@media(max-width:700px){.dancer-silhouette{right:-8%;width:56vw;height:70%;opacity:.13}.hero-copy{max-width:100%;padding-right:12%}.backdrop-tools{max-width:90%}.backdrop-pick,.backdrop-tools button{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.dancer-silhouette,.club-glow{animation:none!important}.club-backdrop video{display:none}}

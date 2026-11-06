@@ -2,18 +2,19 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#18382f"><meta name="description" content="Удаление фона печатей и подписей. Экспорт прозрачного PNG прямо в браузере.">
-<title>StampCleaner — лесная мастерская PNG</title>
+<meta name="theme-color" content="#160b20"><meta name="description" content="Удаление фона печатей и подписей. Экспорт прозрачного PNG прямо в браузере.">
+<title>StampCleaner — Neon Club Studio</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="topbar"><a class="brand" href="#"><img src="favicon.svg" alt=""><span><b>StampCleaner</b><small>Лесная мастерская PNG</small></span></a><span class="privacy">🔒 Обработка на устройстве</span></header>
+<div class="club-backdrop" aria-hidden="true"><video id="club-video" autoplay muted loop playsinline></video><div class="club-glow"></div><div class="dancer-silhouette"><span></span></div></div>
+<header class="topbar"><a class="brand" href="#"><img src="favicon.svg" alt=""><span><b>StampCleaner</b><small>NEON CLUB · STAMP STUDIO</small></span></a><span class="privacy">🔒 Обработка на устройстве</span></header>
 <main>
 <section class="hero">
- <div class="hero-copy"><span class="eyebrow">МАСТЕРСКАЯ СПАСАТЕЛЕЙ ЧЕРНИЛ</span><h1>Спасаем важные <em>чернила!</em></h1>
- <p>Убираем бумагу, оставляем печать и подпись — аккуратно, на прозрачном фоне.</p>
- <a href="#workspace" class="jump">Начать очистку <span>↓</span></a></div>
- <img class="mascot" src="mascot.svg" alt="Оригинальный лесной помощник с лупой">
+ <div class="hero-copy"><span class="eyebrow">NEON CLUB · CYBER GLAM STUDIO</span><h1>Твои чернила.<br><em>Твой стиль.</em></h1>
+ <p>Стильная клубная атмосфера. Профессиональная очистка печатей и подписей — на прозрачном фоне.</p>
+ <a href="#workspace" class="jump">Открыть студию <span>↓</span></a><div class="backdrop-tools"><label class="backdrop-pick">Выбрать видео / фото<input id="club-background-file" type="file" accept="video/*,image/*"></label><button id="club-background-reset" type="button">Сбросить фон</button><label class="motion-toggle"><input id="club-motion" type="checkbox" checked> Движущийся фон</label></div></div>
+ 
  <div class="leaf leaf-one"></div><div class="leaf leaf-two"></div>
 </section>
 <div class="workspace" id="workspace">
@@ -50,7 +51,7 @@
   <p id="status" class="status" aria-live="polite">Выберите изображение, чтобы начать. Обработка выполняется локально.</p>
  </section>
 </div>
-<footer><span>StampCleaner · Rescue Edition</span><span>Сделано с заботой о ваших чернилах 🐿️</span></footer>
+<footer><span>StampCleaner · Neon Club Studio</span><span>Все изображения обрабатываются локально на устройстве</span></footer>
 </main>
 <script src="processor.js"></script>
 <script src="app.js"></script>

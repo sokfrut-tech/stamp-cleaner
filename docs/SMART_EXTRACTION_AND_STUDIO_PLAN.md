@@ -195,3 +195,27 @@ The current main branch uses a simple global luminance threshold in Android and 
 - CI run #123 (`42070755008`): JavaScript syntax checks passed and all 6 synthetic processor tests passed. Android Kotlin compilation then failed in the manual crop gesture because two `coerceIn` lower bounds used integer literals where Compose coordinates require `Float`.
 - Corrected `r.left + 8` and `r.top + 8` to `8f` in `StampCleanerScreen.kt`.
 - Fix commit: `e9861cb298e3fed33f0625bd20f432c732bb73eb`. Await a fresh CI result before claiming APK success.
+
+
+## Reference-inspired workflow expansion — 2026-11-06
+
+The user supplied an article about extracting a stamp/signature from a scan. The exact URL could not be fetched in the current web retrieval session and the article does not expose the site's private implementation code. This plan records the independently implementable product behaviours described by the accessible reference material; do not copy proprietary source or claim source-code inspection.
+
+### Prioritized extraction workflow (Android first, then web parity)
+1. **Import and source selection** — keep current local image picker; add PDF page import only after an on-device PDF renderer is selected and tested. Do not add server upload.
+2. **Selection frame** — manual crop with touch drag, move and eight resize handles; auto-detect may suggest bounds but must remain user-adjustable. Process from original-resolution source pixels, not a scaled screen preview.
+3. **Only selected ink / colour isolation** — optional mode that estimates dominant ink hue inside the crop and suppresses unrelated achromatic text/lines. Must warn when stamp and overprinted text share similar hue; offer manual eraser instead of claiming perfect separation.
+4. **Cleanup studio** — non-destructive eraser strokes with undo/redo; brightness/contrast controls; auto-enhance preset; ink colour picker/recolour. All adjustments must preserve alpha and be reversible until export.
+5. **Preview and export** — before/after comparison, checkerboard plus white/black preview backgrounds, automatic crop with padding, PNG alpha validation, existing mm/DPI export retained.
+6. **Saved local assets** — optional on-device collection of user-selected extracted assets, with rename/delete and no cloud sync by default.
+
+### Safety and quality boundaries
+- Keep the product focused on restoring and managing marks the user is authorized to use. Do not add a workflow that fabricates official seals, represents an extracted image as a cryptographic signature, or silently places marks onto third-party documents.
+- Preserve source image and all original pixels; edits are non-destructive until export.
+- Do not automatically remove same-colour overprinted text where separation confidence is low; show a warning and manual cleanup controls.
+- No feature is complete until tested on the user's blue circular stamp plus fixtures for blue/black/red ink, shadows, printed text crossings, faint edges and 1-pixel strokes.
+
+### Current implementation gap
+- Android currently has import, sensitivity, ink recolour, automatic trim, checkerboard preview, mm/DPI PNG export, and a simple touch crop preview. It does not yet have reliable dominant-ink isolation, auto-detection, brush eraser/undo, brightness/auto-enhance, or local asset library.
+- Existing content mode presets are parameter presets, not true semantic extraction modes.
+- Delivery order: implement crop selection and non-destructive eraser/undo; then brightness/auto-enhance; then dominant-ink isolation with confidence warning; then local library; PDF import only after its rendering path is verified. Mirror stable processing behaviour to web.

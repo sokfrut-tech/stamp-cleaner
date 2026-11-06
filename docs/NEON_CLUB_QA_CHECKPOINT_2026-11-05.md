@@ -1,0 +1,99 @@
+# Neon Club theme — implementation checkpoint
+
+Date: 2026-11-05
+Branch: `feature/neon-club-cyber-glam`
+Pull request: #4 (draft; not merged)
+
+## Verified from GitHub
+- Android workflow run `42090375591` completed successfully for commit `b53aac9f2178899a3bf0b0ccd591a5a9038b6dd9`.
+- The run uploaded artifact `StampCleaner-Android-APK` (15,134,639 bytes; artifact ID `13445605774`).
+- Earlier Android runs for the theme commits `94fbc0eb` and `cc2f3610` also completed successfully.
+- The adaptive launcher icon foreground is now an original neon feminine stage silhouette; launcher background is deep plum. App label is `StampCleaner · Neon Club`.
+- Android MainActivity includes local image/video selection controls, mute/loop playback, motion toggle and reset. The Android screen uses the Neon Club palette.
+- Web app includes local-only image/video background selection, reset, motion toggle, reduced-motion handling and pause-on-hidden behavior. JS declares the status element before the background handler.
+- PR remains open and draft. No merge was performed.
+
+## Not yet verified
+- No emulator/device visual QA has been completed in this checkpoint.
+- The APK artifact has been generated, but the installed launcher icon and actual phone appearance have not been visually inspected.
+- Android video lifecycle/resource release when the activity is paused or the background is toggled off still needs explicit device testing and hardening.
+- User's reference dance video was not supplied; the current dancer is abstract original artwork, not a recreation of a particular performer or choreography.
+
+## Required next QA
+1. Install the generated APK on an Android device and inspect round/square launcher icon masks.
+2. Verify photo selection, processing, manual crop, DPI export and transparent PNG remain unchanged.
+3. Select a local image background, reset it, then select a local muted looping video.
+4. Toggle motion off/on, switch apps, lock/unlock, and confirm playback pauses/resumes without audio or resource leaks.
+5. Test small-screen layout and ensure background controls do not cover the main workflow.
+6. Run web JS syntax and processor tests; verify reduced-motion and page-hidden behavior.
+7. Fix any issues found before marking PR ready. Keep PR #4 unmerged until these checks are complete.
+
+## Scope guard
+Do not alter stamp extraction algorithms as part of the visual theme. Do not bundle third-party performer imagery or video without rights/permission.
+
+
+## Android player hardening update — 2026-11-05
+- Replaced the one-shot `GetContent` pickers with Android's `OpenDocument` picker and requested persistable read access for the selected local media URI. No broad storage permission was added.
+- Added `lifecycle-runtime-compose` and a lifecycle-aware video background composable.
+- Video is muted and looping; it pauses on activity pause/stop, resumes from the saved playback position when appropriate, and calls `stopPlayback()` when removed/released (including motion-off and URI replacement).
+- Fixed pause/resume state so the subsequent ON_STOP event does not erase the resume intent.
+- Commits: `d3293bb88c192924ad02cff2edb7652bb0378e5c`, `220af05a2ea08dd8316690eb0f347e08af914367`, `dad2fd3b502cb8bb5858966e3709520e94d13356`.
+- Fresh Android CI runs for the dependency and player commits: `42091131768`, `42091140463`, `42091145477`. At checkpoint update time these were still in progress; do not mark the new player changes as build-verified until a completed successful run is observed.
+- Physical-device QA remains required: verify background playback pause/resume, motion toggle, local URI persistence after app restart, and confirm all stamp-cleaning workflows remain unchanged.
+
+- Additional guard: if the video preparation callback fires while the Activity is already stopped, it no longer starts playback in the background; playback waits for the lifecycle resume event. Commit: `5e598a836fac5f7c78521b786a8f8be2024e0569`.
+- CI runner status note: runs `42091131768`, `42091140463`, `42091145477`, `42091171173`, `42091187047`, and `42091248568` reached post-job cleanup but GitHub still reported `in_progress` with no conclusion/artifact at the latest inspection. Treat the current source as not yet build-verified.
+
+
+## CI follow-up — 2026-11-05
+- Confirmed completed success for Android runs `42091140463`, `42091145477`, `42091171173`, `42091187047`, `42091248568`, `42091505778`, and `42091518642`.
+- Run `42091518642` built the current player-source commit `5e598a836fac5f7c78521b786a8f8be2024e0569`; artifact `StampCleaner-Android-APK`, ID `13445232878`, size `15,160,373` bytes, available and not expired.
+- Run `42091565324` for documentation checkpoint commit `cdf866c9570abb9d1018a0f3b6405cf94841dba3` was still `in_progress` at latest inspection. The Android source itself is covered by the successful `42091518642` run.
+- Resource tree currently contains the adaptive launcher icon XML at `mipmap-anydpi-v26/ic_launcher.xml` and foreground vector; manifest references it for both `icon` and `roundIcon`. Since `minSdk=26`, no pre-26 legacy icon density assets are required. Visual launcher-mask appearance still needs device inspection.
+- No physical-device/emulator interaction test has been performed; CI build success does not prove touch layering, actual playback lifecycle behavior, or image-processing quality.
+
+
+## Persistent background selection — implementation update
+- The previously persisted URI grant was not enough to restore the chosen background after process restart because the URI itself was only held in Compose memory. Fixed this by storing the selected URI, media type, and motion toggle in app-private SharedPreferences and restoring them when the screen starts.
+- This stores only the local document URI and UI preferences; it does not copy the user's media file or request broad storage access.
+- Commit: `f870a018fa62fb4351fc599cd71db3c9440ee19e`. Build verification for this latest persistence change is pending.
+
+
+## Small-screen layout refinement
+- Reserved a 58 dp top inset in the scrollable StampCleaner screen so the floating background picker/reset/motion controls no longer sit over the app title/header on narrow phones. The rest of the screen remains vertically scrollable; processing logic and image preview/export behavior are unchanged.
+- Commit: `eae8ab5dd7c2f999282ff5879bd91287c1d0d02b`. Build and visual device verification pending.
+
+
+## Web markup QA correction — 2026-11-05
+- Independent review found a literal escaped newline sequence between the background layer and the page header in `web/index.html`. This could render as stray text in the browser even though JavaScript syntax and Android compilation passed.
+- Replaced the literal sequence with a real HTML line break. Commit: `0a3452a0e431ee566f36b7ff0f9fcc9b98f0377d`.
+- A new CI run is required to re-check web JS syntax, processor tests, and Android APK build for the corrected branch head.
+- This is source-level markup verification only; browser rendering and mobile device behavior remain unverified.
+
+
+## Regression tests for theme markup — 2026-11-06
+- Added `web/tests/theme-markup.test.js` to guard the HTML boundary between the backdrop and top navigation, verify background picker/video/control hooks, and assert that the backdrop cannot intercept pointer input and respects reduced-motion settings.
+- Corrected the escaped-newline matcher so it detects the literal backslash-n sequence that caused the original markup defect.
+- Commits: `db86daa9a6aed62f3234a5b28884cc8b991cd2fa` (test addition), `834cc122d8d868d7d93ef03af7e9936fe889fa03` (matcher correction).
+- The existing CI workflow runs all `web/tests/*.test.js` with Node's test runner. Validation for the corrected test commit is pending; do not count the earlier run on the initial test commit as final evidence.
+- No browser automation or physical Android device is attached to this workflow, so visual/lifecycle QA remains outstanding.
+
+
+## Image picker permission hardening — 2026-11-06
+- Matched the image picker to the video picker by safely handling both `SecurityException` and `IllegalArgumentException` when attempting to persist a selected document URI read grant. This prevents an invalid provider URI from crashing the image-selection callback; the selected URI remains locally selected and any later read failure is handled by the existing fallback.
+- Commit: `2b389189362ec1981fb984481ac845858cf5e098`.
+- Fresh Android/web CI for this commit is pending. Earlier successful run `42157131588` verifies the previous code commit `834cc122d8d868d7d93ef03af7e9936fe889fa03`, not this latest change.
+- Device verification of provider-specific URI persistence and image/video playback remains outstanding.
+
+
+## Real-world Word PNG issue — 2026-11-06
+- User supplied a phone-exported PNG and its original photo of a blue circular stamp on cool, unevenly lit white paper. The PNG has an alpha channel, but sampled transparent-background pixels carry gray RGB with alpha 17/255; this is faint residual paper, not a fully opaque black rectangle. It may be composited poorly by office software or previewers.
+- Android `clean()` previously retained pixels down to alpha 0.015. Raised the final alpha floor to 0.08 (about 20/255) so very faint paper residue is made fully transparent while antialiased ink edges above that floor remain.
+- Source commit: `1d2550203c7e19c72e66a584143f8ceb695940ba`.
+- Required validation: fresh Android CI build, then reprocess the same original photo on-device and insert the newly exported PNG into Word. Inspect the outer-ring microtext and fine inner circle for loss. Do not claim Word/device behavior is fixed until this test is completed.
+
+
+## Isolated dust cleanup refinement — 2026-11-06
+- Added a conservative 8-connected-component pass after alpha extraction in Android `clean()`: removes only isolated components of 1–3 pixels at alpha >18, retaining components of four or more pixels to avoid damaging small stamp glyphs and punctuation.
+- Commit: `8cf97109c5952f187f03f01007ce5bb90cfcdc08`.
+- This is a conservative speck filter, not semantic stamp recognition. It requires a fresh CI build and visual check against the supplied blue stamp before claiming quality improvement; fine text preservation must be inspected.
