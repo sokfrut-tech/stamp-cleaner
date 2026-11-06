@@ -69,3 +69,11 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - Replaced the literal sequence with a real HTML line break. Commit: `0a3452a0e431ee566f36b7ff0f9fcc9b98f0377d`.
 - A new CI run is required to re-check web JS syntax, processor tests, and Android APK build for the corrected branch head.
 - This is source-level markup verification only; browser rendering and mobile device behavior remain unverified.
+
+
+## Regression tests for theme markup — 2026-11-06
+- Added `web/tests/theme-markup.test.js` to guard the HTML boundary between the backdrop and top navigation, verify background picker/video/control hooks, and assert that the backdrop cannot intercept pointer input and respects reduced-motion settings.
+- Corrected the escaped-newline matcher so it detects the literal backslash-n sequence that caused the original markup defect.
+- Commits: `db86daa9a6aed62f3234a5b28884cc8b991cd2fa` (test addition), `834cc122d8d868d7d93ef03af7e9936fe889fa03` (matcher correction).
+- The existing CI workflow runs all `web/tests/*.test.js` with Node's test runner. Validation for the corrected test commit is pending; do not count the earlier run on the initial test commit as final evidence.
+- No browser automation or physical Android device is attached to this workflow, so visual/lifecycle QA remains outstanding.
