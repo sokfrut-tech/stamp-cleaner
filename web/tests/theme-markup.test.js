@@ -10,7 +10,7 @@ const js = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 
 test('Neon Club backdrop markup is separated cleanly from the page header', () => {
   assert.match(html, /<div class="club-backdrop" aria-hidden="true">[\s\S]*?<\/div>\s*<header class="topbar">/);
-  assert.doesNotMatch(html, /\\\\n<header/);
+  assert.doesNotMatch(html, /\\n<header/);
 });
 
 test('background controls and muted inline video hooks exist', () => {
