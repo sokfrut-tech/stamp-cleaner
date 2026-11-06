@@ -77,3 +77,10 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - Commits: `db86daa9a6aed62f3234a5b28884cc8b991cd2fa` (test addition), `834cc122d8d868d7d93ef03af7e9936fe889fa03` (matcher correction).
 - The existing CI workflow runs all `web/tests/*.test.js` with Node's test runner. Validation for the corrected test commit is pending; do not count the earlier run on the initial test commit as final evidence.
 - No browser automation or physical Android device is attached to this workflow, so visual/lifecycle QA remains outstanding.
+
+
+## Image picker permission hardening — 2026-11-06
+- Matched the image picker to the video picker by safely handling both `SecurityException` and `IllegalArgumentException` when attempting to persist a selected document URI read grant. This prevents an invalid provider URI from crashing the image-selection callback; the selected URI remains locally selected and any later read failure is handled by the existing fallback.
+- Commit: `2b389189362ec1981fb984481ac845858cf5e098`.
+- Fresh Android/web CI for this commit is pending. Earlier successful run `42157131588` verifies the previous code commit `834cc122d8d868d7d93ef03af7e9936fe889fa03`, not this latest change.
+- Device verification of provider-specific URI persistence and image/video playback remains outstanding.
