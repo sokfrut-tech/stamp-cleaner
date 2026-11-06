@@ -74,10 +74,14 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
    Column(Modifier.weight(1f)){Text("StampCleaner",style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.ExtraBold,color=Color(0xFFFFB5E8));Text("NEON CLUB · STAMP STUDIO",color=Color(0xFFD2B6D4))}
    Text("1.1",color=Color(0xFF9FE3D1))
    if(showPerformer){
-    val motion= rememberInfiniteTransition(label="performer-motion")
-    val sway by motion.animateFloat(initialValue=-4f,targetValue=4f,animationSpec=infiniteRepeatable(tween(if(reducePerformerMotion) 1 else 850),repeatMode=RepeatMode.Reverse),label="performer-sway")
-    val bob by motion.animateFloat(initialValue=0f,targetValue=if(reducePerformerMotion) 0f else 4f,animationSpec=infiniteRepeatable(tween(if(reducePerformerMotion) 1 else 650),repeatMode=RepeatMode.Reverse),label="performer-bob")
-    Image(painterResource(R.drawable.neon_performer),"Неоновая танцовщица",Modifier.size(88.dp).clip(RoundedCornerShape(16.dp)).graphicsLayer{rotationZ=if(reducePerformerMotion)0f else sway;translationY=bob;scaleX=if(reducePerformerMotion)1f else 1f+ bob/160f;scaleY=if(reducePerformerMotion)1f else 1f-bob/160f},contentScale=ContentScale.Crop)
+    if(reducePerformerMotion){
+     Image(painterResource(R.drawable.neon_performer),"Неоновая танцовщица",Modifier.size(108.dp).clip(RoundedCornerShape(18.dp)),contentScale=ContentScale.Crop)
+    }else{
+     val motion= rememberInfiniteTransition(label="performer-motion")
+     val sway by motion.animateFloat(initialValue=-5f,targetValue=5f,animationSpec=infiniteRepeatable(tween(1050),repeatMode=RepeatMode.Reverse),label="performer-sway")
+     val bob by motion.animateFloat(initialValue=-3f,targetValue=3f,animationSpec=infiniteRepeatable(tween(780),repeatMode=RepeatMode.Reverse),label="performer-bob")
+     Image(painterResource(R.drawable.neon_performer),"Неоновая танцовщица",Modifier.size(108.dp).clip(RoundedCornerShape(18.dp)).graphicsLayer{rotationZ=sway;translationY=bob;scaleX=1f+bob/220f;scaleY=1f-bob/220f},contentScale=ContentScale.Crop)
+    }
    }
   }
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){
