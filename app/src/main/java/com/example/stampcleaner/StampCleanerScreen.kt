@@ -52,7 +52,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
  val ctx=LocalContext.current;val scope=rememberCoroutineScope()
  var src by remember{mutableStateOf<Bitmap?>(null)};var dst by remember{mutableStateOf<Bitmap?>(null)}
  var widthMm by remember{mutableStateOf("40")};var heightMm by remember{mutableStateOf("40")};var dpi by remember{mutableIntStateOf(300)}
- var tol by remember{mutableFloatStateOf(12f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)};var inkOnly by remember{mutableStateOf(false)};var blueHsvOnly by remember{mutableStateOf(false)}
+ var tol by remember{mutableFloatStateOf(12f)};var blueHueTolerance by remember{mutableFloatStateOf(40f)};var mode by remember{mutableStateOf(ContentMode.STAMP)};var ink by remember{mutableStateOf(inks[0])};var trim by remember{mutableStateOf(true)};var inkOnly by remember{mutableStateOf(false)};var blueHsvOnly by remember{mutableStateOf(false)}
  var status by remember{mutableStateOf("Выберите фото или скан печати.")};var busy by remember{mutableStateOf(false)}
  val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->
   if(uri!=null){src=null;dst=null;scope.launch{busy=true;try{val decoded=withContext(Dispatchers.IO){decodeScaled(ctx,uri)};src=decoded;status=if(decoded!=null)"Фото загружено." else "Не удалось прочитать изображение."}catch(e:OutOfMemoryError){status="Фото слишком большое для памяти устройства."}catch(e:Exception){status="Не удалось открыть изображение."}finally{busy=false}}}
@@ -85,6 +85,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
    Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=trim,onCheckedChange={trim=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFFD28BFF)));Column{Text("Обрезать прозрачные поля",color=Color(0xFFFFEAF8),fontWeight=FontWeight.SemiBold);Text("Оставить небольшой отступ вокруг чернил",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)}}
    Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=inkOnly,onCheckedChange={inkOnly=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFFD28BFF)));Column{Text("Только цвет чернил",color=Color(0xFFFFEAF8),fontWeight=FontWeight.SemiBold);Text("Подавляет серый и чёрный текст рядом с цветной печатью",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)}}
    Row(verticalAlignment=Alignment.CenterVertically){Checkbox(checked=blueHsvOnly,onCheckedChange={blueHsvOnly=it},colors=CheckboxDefaults.colors(checkedColor=Color(0xFFD28BFF)));Column{Text("Выделять синие чернила (HSV)",color=Color(0xFFFFEAF8),fontWeight=FontWeight.SemiBold);Text("Дополнительный режим по цветовому диапазону; полезен для синей печати на фоне чёрного текста.",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)}}
+   if(blueHsvOnly){Row(verticalAlignment=Alignment.CenterVertically){Text("Ширина синего диапазона",Modifier.weight(1f),color=Color(0xFFFFEAF8));Text("±${blueHueTolerance.toInt()}°",color=Color(0xFFFFB5E8),fontWeight=FontWeight.Bold)};Slider(value=blueHueTolerance,onValueChange={blueHueTolerance=it},valueRange=15f..70f,colors=SliderDefaults.colors(thumbColor=Color(0xFFFF9DDF),activeTrackColor=Color(0xFFD28BFF)));Text("Увеличьте диапазон, если синие чернила уходят в голубой или фиолетовый.",color=Color(0xFFD2B6D4),style=MaterialTheme.typography.bodySmall)}
    Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Palette,null,tint=Color(0xFFE49BFF));Spacer(Modifier.width(8.dp));Text("Цвет чернил",color=Color(0xFFFFEAF8),fontWeight=FontWeight.SemiBold)}
    inks.chunked(3).forEach{line->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){line.forEach{choice->
     val active=choice==ink
@@ -92,7 +93,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
      choice.color?.let{Box(Modifier.size(9.dp).clip(CircleShape).background(Color(it)))};if(choice.color!=null)Spacer(Modifier.width(4.dp));Text(choice.name,style=MaterialTheme.typography.labelSmall)
     }
    };repeat(3-line.size){Spacer(Modifier.weight(1f))}}}
-   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;val crop=trim;val filterInk=inkOnly;val filterBlue=blueHsvOnly;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk,crop,filterInk,filterBlue)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFD28BFF),contentColor=Color(0xFF0B0711))){
+   Button(enabled=src!=null&&!busy,onClick={val input=src?:return@Button;val threshold=tol.toInt();val selectedInk=ink.color;val crop=trim;val filterInk=inkOnly;val filterBlue=blueHsvOnly;val hueTolerance=blueHueTolerance;scope.launch{busy=true;status="Очищаем фон…";try{dst=withContext(Dispatchers.Default){clean(input,threshold,selectedInk,crop,filterInk,filterBlue,hueTolerance)};status="Готово! Проверьте и сохраните PNG."}catch(e:OutOfMemoryError){status="Фото слишком большое — попробуйте уменьшить размер."}catch(e:Exception){status="Ошибка обработки."}finally{busy=false}}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFFD28BFF),contentColor=Color(0xFF0B0711))){
     Icon(Icons.Default.AutoFixHigh,null);Spacer(Modifier.width(8.dp));Text(if(busy)"Обрабатываем…" else "Удалить фон",fontWeight=FontWeight.Bold)
    }
   }
@@ -125,7 +126,7 @@ private val inks=listOf(Ink("Оригинал",null),Ink("Синий",C.BLUE),In
   Image(bitmap.asImageBitmap(),label,Modifier.fillMaxWidth().heightIn(max=260.dp),contentScale=ContentScale.Fit)
  }
 }
-private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean,inkOnly:Boolean=false,blueHsvOnly:Boolean=false):Bitmap {
+private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean,inkOnly:Boolean=false,blueHsvOnly:Boolean=false,blueHueTolerance:Float=40f):Bitmap {
  val w=b.width;val h=b.height;val pixels=IntArray(w*h);b.getPixels(pixels,0,w,0,0,w,h)
  val tile=24;val gw=(w+tile-1)/tile;val gh=(h+tile-1)/tile
  val br=IntArray(gw*gh);val bg=IntArray(gw*gh);val bb=IntArray(gw*gh)
@@ -170,11 +171,13 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean,inkOnly:Boolean=false,b
   val linearAlpha=((raw-cutoff)/denom).coerceIn(0f,1f)
   var alpha=Math.pow(linearAlpha.toDouble(),1.12).toFloat()
   if(blueHsvOnly){
-   // Blue isolation follows the HSV range used by public stamp-extraction projects.
-   // OpenCV hue 90..130 on a 0..180 scale maps to Android HSV degrees 180..260.
-   // Saturation gating suppresses grey and black form text.
+   // OpenCV hue 90..130 maps to Android HSV 180..260 degrees.
+   // User-adjustable width expands/contracts the blue band around its 220-degree center.
+   // Smooth edges avoid hard cut-outs in antialiased stamp contours.
    val hsv=FloatArray(3);C.RGBToHSV(C.red(c),C.green(c),C.blue(c),hsv)
-   val hueKeep=if(hsv[0] in 180f..260f)1f else 0f
+   val half=blueHueTolerance.coerceIn(15f,70f)
+   val delta=kotlin.math.abs(((hsv[0]-220f+540f)%360f)-180f)
+   val hueKeep=((half+6f-delta)/12f).coerceIn(0f,1f)
    val satKeep=((hsv[1]-.18f)/.30f).coerceIn(0f,1f)
    alpha*=hueKeep*satKeep
   }
