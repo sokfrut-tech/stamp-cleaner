@@ -84,3 +84,10 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - Commit: `2b389189362ec1981fb984481ac845858cf5e098`.
 - Fresh Android/web CI for this commit is pending. Earlier successful run `42157131588` verifies the previous code commit `834cc122d8d868d7d93ef03af7e9936fe889fa03`, not this latest change.
 - Device verification of provider-specific URI persistence and image/video playback remains outstanding.
+
+
+## Real-world Word PNG issue — 2026-11-06
+- User supplied a phone-exported PNG and its original photo of a blue circular stamp on cool, unevenly lit white paper. The PNG has an alpha channel, but sampled transparent-background pixels carry gray RGB with alpha 17/255; this is faint residual paper, not a fully opaque black rectangle. It may be composited poorly by office software or previewers.
+- Android `clean()` previously retained pixels down to alpha 0.015. Raised the final alpha floor to 0.08 (about 20/255) so very faint paper residue is made fully transparent while antialiased ink edges above that floor remain.
+- Source commit: `1d2550203c7e19c72e66a584143f8ceb695940ba`.
+- Required validation: fresh Android CI build, then reprocess the same original photo on-device and insert the newly exported PNG into Word. Inspect the outer-ring microtext and fine inner circle for loss. Do not claim Word/device behavior is fixed until this test is completed.
