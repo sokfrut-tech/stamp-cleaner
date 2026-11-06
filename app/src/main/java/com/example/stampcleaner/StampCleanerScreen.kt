@@ -178,6 +178,26 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
    pixels[i]=C.argb((alpha*255).toInt(),rr,gg,blc)
   }
  }
+ // Remove only isolated 1–3 pixel dust specks. Small stamp glyphs and punctuation are larger
+ // or connected to neighboring ink; keep every component of four pixels or more.
+ val visited=BooleanArray(w*h)
+ val queue=IntArray(w*h)
+ for(start in pixels.indices){
+  if(visited[start]||C.alpha(pixels[start])<=18)continue
+  var head=0;var tail=0
+  queue[tail++]=start;visited[start]=true
+  while(head<tail){
+   val at=queue[head++];val x=at%w;val y=at/w
+   for(dy in -1..1)for(dx in -1..1){
+    if(dx==0&&dy==0)continue
+    val nx=x+dx;val ny=y+dy
+    if(nx !in 0 until w||ny !in 0 until h)continue
+    val ni=ny*w+nx
+    if(!visited[ni]&&C.alpha(pixels[ni])>18){visited[ni]=true;queue[tail++]=ni}
+   }
+  }
+  if(tail<=3)for(k in 0 until tail)pixels[queue[k]]=C.TRANSPARENT
+ }
  val output=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{it.setPixels(pixels,0,w,0,0,w,h)}
  if(!trim)return output
  var left=w;var top=h;var right=-1;var bottom=-1
