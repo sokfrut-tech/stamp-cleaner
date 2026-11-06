@@ -91,3 +91,9 @@ Do not alter stamp extraction algorithms as part of the visual theme. Do not bun
 - Android `clean()` previously retained pixels down to alpha 0.015. Raised the final alpha floor to 0.08 (about 20/255) so very faint paper residue is made fully transparent while antialiased ink edges above that floor remain.
 - Source commit: `1d2550203c7e19c72e66a584143f8ceb695940ba`.
 - Required validation: fresh Android CI build, then reprocess the same original photo on-device and insert the newly exported PNG into Word. Inspect the outer-ring microtext and fine inner circle for loss. Do not claim Word/device behavior is fixed until this test is completed.
+
+
+## Isolated dust cleanup refinement — 2026-11-06
+- Added a conservative 8-connected-component pass after alpha extraction in Android `clean()`: removes only isolated components of 1–3 pixels at alpha >18, retaining components of four or more pixels to avoid damaging small stamp glyphs and punctuation.
+- Commit: `8cf97109c5952f187f03f01007ce5bb90cfcdc08`.
+- This is a conservative speck filter, not semantic stamp recognition. It requires a fresh CI build and visual check against the supplied blue stamp before claiming quality improvement; fine text preservation must be inspected.
