@@ -168,6 +168,15 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean,inkOnly:Boolean=false,b
   val raw=(dr*r+dg*g+db*bl)/norm
   val linearAlpha=((raw-cutoff)/denom).coerceIn(0f,1f)
   var alpha=Math.pow(linearAlpha.toDouble(),1.12).toFloat()
+  if(blueHsvOnly){
+   // Blue isolation follows the HSV range used by public stamp-extraction projects.
+   // OpenCV hue 90..130 on a 0..180 scale maps to Android HSV degrees 180..260.
+   // Saturation gating suppresses grey and black form text.
+   val hsv=FloatArray(3);C.RGBToHSV(C.red(c),C.green(c),C.blue(c),hsv)
+   val hueKeep=if(hsv[0] in 180f..260f)1f else 0f
+   val satKeep=((hsv[1]-.18f)/.30f).coerceIn(0f,1f)
+   alpha*=hueKeep*satKeep
+  }
   if(inkOnly){
    // Keep hues close to the detected/selected ink while suppressing unrelated grey/black form text.
    // Soft transition protects antialiased stamp edges and natural ink-density variation.
