@@ -167,7 +167,9 @@ private fun clean(b:Bitmap,t:Int,color:Int?,trim:Boolean):Bitmap {
   val raw=(dr*r+dg*g+db*bl)/norm
   val linearAlpha=((raw-cutoff)/denom).coerceIn(0f,1f)
   val alpha=Math.pow(linearAlpha.toDouble(),1.12).toFloat()
-  if(alpha<.015f)pixels[i]=C.TRANSPARENT else if(color!=null)pixels[i]=C.argb((alpha*255).toInt(),ink[0],ink[1],ink[2]) else {
+  // Drop faint paper residue (typically 1–20/255 alpha) that can show as a gray/black matte in office apps.
+  // Keep antialiased stamp edges above this floor so fine ring text and strokes remain intact.
+  if(alpha<.08f)pixels[i]=C.TRANSPARENT else if(color!=null)pixels[i]=C.argb((alpha*255).toInt(),ink[0],ink[1],ink[2]) else {
    // Original mode preserves the photographed ink hue and removes paper contamination at soft edges.
    val a=alpha.coerceAtLeast(.08f)
    val rr=(p[0]+(C.red(c)-p[0])/a).toInt().coerceIn(0,255)
