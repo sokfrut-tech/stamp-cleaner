@@ -55,4 +55,10 @@ footer{position:relative;z-index:1;color:#b99bc1}
 .backdrop-pick input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .motion-toggle{display:inline-flex;gap:6px;align-items:center;color:#e6c8e9;font-size:11px}.motion-toggle input{accent-color:#ff9de0}
 @media(max-width:700px){.dancer-silhouette{right:-8%;width:56vw;height:70%;opacity:.13}.hero-copy{max-width:100%;padding-right:12%}.backdrop-tools{max-width:90%}.backdrop-pick,.backdrop-tools button{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.dancer-silhouette,.club-glow{animation:none!important}.club-backdrop video{display:none}}
+@media(prefers-reduced-motion:reduce){.dancer-silhouette,.club-glow{animation:none!important}}
+
+/* Neon Club video panel: a portrait video becomes a visible side panel instead of a faint full-screen wash. */
+.club-backdrop.has-video .dancer-silhouette{display:none}
+.club-backdrop.video-portrait video{inset:auto 3% 0 auto;width:min(36vw,440px);height:92%;object-fit:cover;opacity:.92;border-radius:28px 28px 0 0;filter:saturate(1.1) contrast(1.05);-webkit-mask-image:linear-gradient(to right,transparent,#000 24%);mask-image:linear-gradient(to right,transparent,#000 24%)}
+.club-backdrop.is-still .club-glow,.club-backdrop.is-still .dancer-silhouette{animation:none}
+@media(max-width:700px){.club-backdrop.video-portrait video{inset:auto -6% 0 auto;width:62vw;height:78%;opacity:.55}}

@@ -80,18 +80,31 @@ window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(obj
  const backdrop=document.querySelector('.club-backdrop');
  if(!input||!video||!motion||!reset||!backdrop)return;
  let activeUrl=null;
- const clear=()=>{video.pause();video.removeAttribute('src');video.load();backdrop.style.backgroundImage='';if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl=null;}};
+ // Motion off (or "reduce motion" in the OS) keeps the picture visible but still: the first frame is shown and nothing animates.
+ const applyMotion=()=>{
+  backdrop.classList.toggle('is-still',!motion.checked);
+  if(!video.src)return;
+  if(motion.checked)video.play().catch(()=>{status.textContent='Нажмите на переключатель фона, чтобы запустить видео.';});
+  else{video.pause();try{video.currentTime=0;}catch(e){}}
+ };
+ const clear=()=>{video.pause();video.removeAttribute('src');video.load();backdrop.style.backgroundImage='';backdrop.classList.remove('has-video','video-portrait');if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl=null;}};
+ // A portrait video is shown as a side panel (the dancer next to the controls); a landscape one stays a dimmed full-screen background.
+ video.addEventListener('loadedmetadata',()=>{
+  backdrop.classList.toggle('video-portrait',video.videoHeight>video.videoWidth);
+  if(!motion.checked){try{video.currentTime=0;}catch(e){}}
+ });
  input.addEventListener('change',()=>{
   const file=input.files&&input.files[0];if(!file)return;
   if(!file.type.startsWith('video/')&&!file.type.startsWith('image/')){status.textContent='Выберите видео или изображение.';input.value='';return;}
   clear();activeUrl=URL.createObjectURL(file);
-  if(file.type.startsWith('video/')){video.src=activeUrl;video.style.display='block';video.play().catch(()=>{status.textContent='Нажмите на переключатель фона, чтобы запустить видео.';});}
+  if(file.type.startsWith('video/')){backdrop.classList.add('has-video');video.src=activeUrl;video.style.display='block';applyMotion();}
   else{video.style.display='none';backdrop.style.backgroundImage='linear-gradient(#10081799,#100817bb),url("'+activeUrl+'")';backdrop.style.backgroundSize='cover';backdrop.style.backgroundPosition='center';}
   status.textContent='Фоновый файл выбран. Он остаётся только на этом устройстве.';
  });
- motion.addEventListener('change',()=>{backdrop.style.display=motion.checked?'block':'none';});
- reset.addEventListener('click',()=>{clear();video.style.display='block';input.value='';motion.checked=true;backdrop.style.display='block';status.textContent='Возвращён встроенный неоновый фон.';});
+ motion.addEventListener('change',applyMotion);
+ reset.addEventListener('click',()=>{clear();video.style.display='block';input.value='';motion.checked=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;applyMotion();status.textContent='Возвращён встроенный неоновый фон.';});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else if(motion.checked&&video.src)video.play().catch(()=>{});});
- if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){motion.checked=false;backdrop.style.display='none';}
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){motion.checked=false;}
+ applyMotion();
  window.addEventListener('pagehide',clear,{once:true});
 })();
